@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VokabelTrainer · Aaron · Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0f1829;color:#eef2ff;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Top bar ── */
+#topbar{padding:12px 18px;border-bottom:1px solid #1E2D5A;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.logo{font-size:18px;font-weight:800;letter-spacing:-.5px}.logo span{color:#F5E642}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.streak-badge{display:flex;align-items:center;gap:5px;background:#1a2540;border:1px solid #2a3a6a;border-radius:20px;padding:4px 10px;font-size:13px;font-weight:700}
+.streak-badge.active{border-color:#F5E642;color:#F5E642}
+.streak-fire{font-size:16px}
+
+/* ── Screens ── */
+.screen{flex:1;display:none;flex-direction:column;align-items:center;padding:20px 18px}
+.screen.active{display:flex}
+.screen-center{justify-content:center}
+h2{font-size:19px;font-weight:700;margin-bottom:14px;text-align:center}
+h3{font-size:12px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;text-align:center}
+
+/* ── Tabs ── */
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.tab{border:1px solid #2a3a6a;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#8899bb;transition:all .15s;white-space:nowrap}
+.tab.active{border-color:#F5E642;background:#F5E64222;color:#F5E642}
+.tab .cnt{background:#ffffff22;border-radius:10px;padding:0 6px;font-size:10px;margin-left:3px}
+
+/* ── Unit grid ── */
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;width:100%;max-width:540px;margin-bottom:12px}
+.unit-btn{background:#1a2540;border:1px solid #2a3a6a;border-radius:10px;padding:9px 12px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.unit-btn.selected{border-color:#F5E642;background:#F5E64222}
+.unit-btn .ulabel{font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit-btn .ucnt{font-size:10px;color:#8899bb;flex-shrink:0;white-space:nowrap}
+.unit-btn .uprog{position:absolute;bottom:0;left:0;height:3px;background:#4ECDC4;border-radius:0 0 10px 10px;transition:width .4s}
+
+/* ── Progress panel ── */
+.progress-panel{width:100%;max-width:540px;background:#1a2540;border:1px solid #2a3a6a;border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.progress-panel h3{margin:0 0 10px;text-align:left}
+.prog-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
+.prog-label{width:60px;color:#8899bb;flex-shrink:0}
+.prog-bar-wrap{flex:1;height:6px;background:#2a3a6a;border-radius:3px;overflow:hidden}
+.prog-bar-fill{height:100%;background:#4ECDC4;border-radius:3px;transition:width .4s}
+.prog-pct{width:32px;text-align:right;color:#8899bb;flex-shrink:0}
+
+/* ── Buttons ── */
+.btn-y{background:#F5E642;color:#0f1829;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-t{background:#4ECDC4;color:#0f1829;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-p{background:#a78bfa;color:#0f1829;border:none;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-sm-y{background:#F5E642;color:#0f1829;border:none;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12px;cursor:pointer;flex:1}
+.btn-sm-t{background:#4ECDC4;color:#0f1829;border:none;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12px;cursor:pointer;flex:1}
+.btn-sm-p{background:#a78bfa;color:#0f1829;border:none;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12px;cursor:pointer;flex:1}
+.btn-back{background:none;border:1px solid #2a3a6a;color:#8899bb;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer}
+.btn-ghost{background:none;border:1px solid #2a3a6a;color:#8899bb;border-radius:10px;padding:11px 24px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+
+/* ── Mode cards ── */
+.mode-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.mode-card{background:#1a2540;border:1px solid #2a3a6a;border-radius:14px;padding:14px 18px;min-width:170px;text-align:center}
+.mode-card.creative{border-color:#a78bfa33;background:#a78bfa11}
+.mode-card .mlabel{font-weight:700;font-size:14px;margin-bottom:3px}
+.mode-card .msub{color:#8899bb;font-size:11px}
+.mode-btns{display:flex;gap:6px;margin-top:10px}
+.set-info{color:#8899bb;font-size:13px;margin-bottom:14px;text-align:center}
+.filter-section{margin-bottom:14px}
+.filter-section-label{font-size:10px;font-weight:700;color:#8899bb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;padding-left:2px}
+
+/* ── Quiz screen ── */
+#quiz-screen{justify-content:flex-start;padding-top:14px;max-width:520px;margin:0 auto;width:100%}
+.quiz-head{width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.quiz-meta{display:flex;align-items:center;gap:8px}
+.quiz-counter{color:#8899bb;font-size:12px}
+.mode-pill{font-size:10px;border-radius:8px;padding:2px 7px;font-weight:700}
+.mode-pill.standard{background:#1a2540;color:#8899bb}
+.mode-pill.creative{background:#a78bfa22;color:#a78bfa;border:1px solid #a78bfa44}
+.score-pill{background:#1a2540;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
+.score-pill .ok{color:#4ECDC4}.score-pill .bad{color:#FF6B6B}
+.progress-bar{width:100%;height:3px;background:#1a2540;border-radius:3px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:#F5E642;border-radius:3px;transition:width .3s}
+
+/* ── Round indicator ── */
+.round-badge{text-align:center;font-size:11px;color:#FF6B6B;font-weight:700;margin-bottom:8px;display:none}
+.round-badge.show{display:block}
+
+/* ── Card ── */
+.card{width:100%;background:#1a2540;border-radius:18px;padding:24px 20px;text-align:center;border:2px solid transparent;transition:border-color .2s,box-shadow .2s;margin-bottom:14px}
+.card.correct{border-color:#4ECDC4;box-shadow:0 0 0 3px #4ECDC444}
+.card.wrong{border-color:#FF6B6B;box-shadow:0 0 0 3px #FF6B6B44}
+.card.creative-card{border-color:#a78bfa44}
+.card-label{font-size:10px;color:#8899bb;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
+.card-sec{display:inline-block;background:#2a3a6a;color:#8899bb;font-size:10px;border-radius:7px;padding:2px 6px;margin-bottom:7px}
+.card-word{font-size:28px;font-weight:800;letter-spacing:-.5px;word-break:break-word}
+.card-feedback{margin-top:8px;font-size:13px;font-weight:600;display:none}
+.card-feedback.correct{color:#4ECDC4;display:block}
+.card-feedback.wrong{color:#FF6B6B;display:block}
+
+/* ── Creative card extras ── */
+.creative-type-badge{font-size:11px;color:#a78bfa;font-weight:700;margin-bottom:6px;letter-spacing:.5px}
+.creative-prompt{font-size:15px;line-height:1.5;color:#eef2ff;margin:8px 0 4px}
+.creative-image{width:100%;max-height:180px;object-fit:contain;border-radius:10px;margin:8px 0}
+.ai-response{background:#0f1829;border-radius:10px;padding:12px;font-size:13px;line-height:1.6;text-align:left;margin-top:8px;border:1px solid #2a3a6a;display:none}
+.ai-response.show{display:block}
+.ai-loading{display:none;justify-content:center;align-items:center;gap:8px;padding:12px;color:#8899bb;font-size:13px}
+.ai-loading.show{display:flex}
+.dot{width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:bounce .8s infinite}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* ── Input ── */
+.type-area{width:100%;display:flex;flex-direction:column;gap:7px}
+.type-input{background:#1a2540;border:2px solid #2a3a6a;border-radius:10px;color:#eef2ff;font-size:17px;padding:12px 14px;text-align:center;outline:none;width:100%;transition:border-color .2s}
+.type-input.correct{border-color:#4ECDC4}.type-input.wrong{border-color:#FF6B6B}
+.type-input:disabled{opacity:.7}
+.mc-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.mc-btn{background:#1a2540;border:1px solid #2a3a6a;border-radius:12px;color:#eef2ff;font-size:13px;font-weight:600;padding:12px 8px;cursor:pointer;transition:background .15s;word-break:break-word;line-height:1.3}
+.mc-btn.revealed-correct{background:#4ECDC422;border-color:#4ECDC4}
+.mc-btn:disabled{cursor:default}
+.mc-next{grid-column:span 2;margin-top:3px}
+
+/* ── Creative textarea ── */
+.creative-input{background:#1a2540;border:2px solid #a78bfa44;border-radius:10px;color:#eef2ff;font-size:15px;padding:12px 14px;outline:none;width:100%;resize:none;line-height:1.5;transition:border-color .2s}
+.creative-input:focus{border-color:#a78bfa}
+
+/* ── Result ── */
+.result-box{background:#1a2540;border-radius:20px;padding:28px 36px;text-align:center;width:100%;max-width:400px}
+.result-emoji{font-size:48px}.result-pct{font-size:44px;font-weight:900;color:#F5E642;margin:4px 0 0}
+.result-sub{color:#8899bb;font-size:13px;margin-top:4px}
+.result-rounds{font-size:12px;color:#4ECDC4;margin-top:6px}
+
+/* ── Learned toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#4ECDC4;color:#0f1829;font-weight:700;font-size:13px;padding:10px 20px;border-radius:20px;transition:transform .3s;z-index:100;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">Vokabel<span>Trainer</span> <span style="color:#a78bfa;font-size:12px;font-weight:600">Pro</span></div>
+  <div class="topbar-right">
+    <div class="streak-badge" id="streak-badge"><span class="streak-fire">🔥</span><span id="streak-num">0</span></div>
+    <button class="btn-back" onclick="showScreen('filter-screen')" id="home-btn" style="display:none">⌂ Auswahl</button>
+  </div>
+</div>
+<!-- XP bar below topbar -->
+<div id="xp-bar-wrap" style="padding:4px 18px 6px;background:#0f1829;border-bottom:1px solid #1E2D5A">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+    <span id="xp-level" style="font-size:11px;font-weight:700;color:#F5E642">Level 1</span>
+    <span id="xp-label" style="font-size:10px;color:#8899bb">0 / 200 XP</span>
+  </div>
+  <div style="height:4px;background:#1a2540;border-radius:4px;overflow:hidden">
+    <div id="xp-bar-fill" style="height:100%;background:linear-gradient(90deg,#F5E642,#f5a442);border-radius:4px;transition:width .5s ease;width:0%"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- SCREEN 1: Filter -->
+<div id="filter-screen" class="screen active" style="align-items:stretch;padding:16px 18px 24px">
+  <div style="max-width:560px;width:100%;margin:0 auto">
+
+    <h2 style="margin-bottom:16px">Welche Vokabeln?</h2>
+
+    <!-- Step 1: Set -->
+    <div class="filter-section">
+      <div class="filter-section-label">SET</div>
+      <div class="tab-row" id="cat-tabs" style="justify-content:flex-start">
+        <button class="tab active" data-cat="unit" onclick="setCat('unit')">📖 Nach Unit <span class="cnt" id="cnt-unit">—</span></button>
+        <button class="tab" data-cat="core" onclick="setCat('core')">⭐ Wichtigste <span class="cnt" id="cnt-core">—</span></button>
+        <button class="tab" data-cat="all" onclick="setCat('all')">📚 Alle <span class="cnt" id="cnt-all">—</span></button>
+      </div>
+    </div>
+
+    <!-- Unit picker (only for "unit" cat) -->
+    <div id="unit-picker" style="margin-bottom:12px">
+      <div class="filter-section-label">UNIT AUSWÄHLEN — Mehrfachauswahl möglich</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%">
+        <div>
+          <div style="font-size:10px;color:#4ECDC4;font-weight:700;letter-spacing:1px;margin-bottom:6px">HAUPTUNITS</div>
+          <div style="display:flex;flex-direction:column;gap:6px" id="unit-grid-main"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#a78bfa;font-weight:700;letter-spacing:1px;margin-bottom:6px">WEITERE</div>
+          <div style="display:flex;flex-direction:column;gap:6px" id="unit-grid-extra"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Wortart (only for core/all) -->
+    <div class="filter-section" id="pos-section" style="display:none">
+      <div class="filter-section-label">WORTART</div>
+      <div class="tab-row" id="pos-tabs" style="justify-content:flex-start">
+        <button class="tab active" data-pos="all" onclick="setPos('all')">Alle</button>
+        <button class="tab" data-pos="V" onclick="setPos('V')">🔵 Verben <span class="cnt" id="cnt-pos-V"></span></button>
+        <button class="tab" data-pos="N" onclick="setPos('N')">🟡 Nomen <span class="cnt" id="cnt-pos-N"></span></button>
+        <button class="tab" data-pos="ADJ" onclick="setPos('ADJ')">🟢 Adj/Adv <span class="cnt" id="cnt-pos-ADJ"></span></button>
+        <button class="tab" data-pos="NUM" onclick="setPos('NUM')">🔢 Zahlen <span class="cnt" id="cnt-pos-NUM"></span></button>
+        <button class="tab" data-pos="PRO" onclick="setPos('PRO')">🔤 Pronomen <span class="cnt" id="cnt-pos-PRO"></span></button>
+      </div>
+    </div>
+
+    <!-- Step 3: Thema (only for core/all) -->
+    <div class="filter-section" id="topic-section" style="display:none">
+      <div class="filter-section-label">THEMA</div>
+      <div class="tab-row" id="topic-tabs" style="justify-content:flex-start">
+        <button class="tab active" data-topic="all" onclick="setTopic('all')">Alle</button>
+        <button class="tab" data-topic="family" onclick="setTopic('family')">👨‍👩‍👧 Familie</button>
+        <button class="tab" data-topic="home" onclick="setTopic('home')">🏠 Zuhause</button>
+        <button class="tab" data-topic="school" onclick="setTopic('school')">🏫 Schule</button>
+        <button class="tab" data-topic="leisure" onclick="setTopic('leisure')">🎨 Freizeit</button>
+        <button class="tab" data-topic="shopping" onclick="setTopic('shopping')">🛒 Einkaufen</button>
+        <button class="tab" data-topic="food" onclick="setTopic('food')">🍎 Essen</button>
+        <button class="tab" data-topic="feelings" onclick="setTopic('feelings')">💬 Gefühle</button>
+        <button class="tab" data-topic="time" onclick="setTopic('time')">⏰ Zeit</button>
+        <button class="tab" data-topic="places" onclick="setTopic('places')">🗺️ Orte</button>
+        <button class="tab" data-topic="nature" onclick="setTopic('nature')">🌿 Natur</button>
+        <button class="tab" data-topic="celebrations" onclick="setTopic('celebrations')">🎉 Feste</button>
+        <button class="tab" data-topic="world" onclick="setTopic('world')">🌍 Welt</button>
+        <button class="tab" data-topic="language" onclick="setTopic('language')">💡 Sprache</button>
+      </div>
+    </div>
+
+    <!-- Progress panel -->
+    <div id="progress-panel" class="progress-panel" style="display:none">
+      <h3 style="text-align:left;margin:0 0 10px">Dein Fortschritt</h3>
+      <div id="prog-rows"></div>
+    </div>
+
+    <!-- Due today panel -->
+    <div id="due-panel" class="filter-section" style="display:none">
+      <div class="filter-section-label">SPACED REPETITION</div>
+      <div style="background:#1a2540;border:1px solid #2a3a6a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-weight:700;font-size:14px">📅 Fällig heute</div>
+          <div style="color:#8899bb;font-size:12px;margin-top:2px" id="due-desc">wird berechnet…</div>
+        </div>
+        <button class="btn-t" id="due-btn" onclick="startDueSession()" style="white-space:nowrap;flex-shrink:0">Jetzt lernen</button>
+      </div>
+    </div>
+
+    <!-- Secondary actions: 3 equal buttons -->
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-ghost" onclick="showAchievements()" style="flex:1;font-size:12px;padding:10px 8px">🏆 Achievements</button>
+      <button class="btn-ghost" onclick="exportData()" style="flex:1;font-size:12px;padding:10px 8px">💾 Exportieren</button>
+      <label style="flex:1">
+        <span class="btn-ghost" style="display:block;text-align:center;font-size:12px;cursor:pointer;border-radius:10px;padding:10px 8px;border:1px solid #2a3a6a;color:#8899bb">📂 Importieren</span>
+        <input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])">
+      </label>
+    </div>
+
+    <!-- Primary CTA -->
+    <div style="margin-top:10px">
+      <button class="btn-y" onclick="goToMode()" style="width:100%;padding:14px;font-size:16px">Los geht's →</button>
+    </div>
+    <div id="active-count" style="text-align:center;color:#8899bb;font-size:12px;margin-top:8px"></div>
+
+  </div>
+</div>
+
+<!-- SCREEN 2: Mode -->
+<div id="mode-screen" class="screen screen-center">
+  <button class="btn-back" style="margin-bottom:16px" onclick="showScreen('filter-screen')">← zurück</button>
+  <h2>Lernmodus wählen</h2>
+  <div class="set-info" id="set-info"></div>
+  <div class="mode-grid">
+    <div class="mode-card">
+      <div class="mlabel">Multiple Choice</div>
+      <div class="msub">4 Antworten zur Auswahl</div>
+      <div class="mode-btns">
+        <button class="btn-sm-y" onclick="startQuiz('mc','en2de')">EN→DE</button>
+        <button class="btn-sm-t" onclick="startQuiz('mc','de2en')">DE→EN</button>
+      </div>
+    </div>
+    <div class="mode-card">
+      <div class="mlabel">Selbst eingeben</div>
+      <div class="msub">Antwort tippen</div>
+      <div class="mode-btns">
+        <button class="btn-sm-y" onclick="startQuiz('type','en2de')">EN→DE</button>
+        <button class="btn-sm-t" onclick="startQuiz('type','de2en')">DE→EN</button>
+      </div>
+    </div>
+    <div class="mode-card creative">
+      <div class="mlabel">🎨 Kreativmodus</div>
+      <div class="msub">Sätze bauen · Lückentext · Bilder — mit KI bewertet</div>
+      <div class="mode-btns">
+        <button class="btn-sm-p" onclick="startQuiz('creative','en2de')">EN→DE</button>
+        <button class="btn-sm-p" onclick="startQuiz('creative','de2en')">DE→EN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: Quiz -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-head">
+    <button class="btn-back" onclick="showScreen('mode-screen')">← zurück</button>
+    <div class="quiz-meta">
+      <span class="quiz-counter" id="quiz-counter"></span>
+      <span class="mode-pill standard" id="mode-pill"></span>
+    </div>
+    <span class="score-pill"><span class="ok" id="score-ok">✓0</span> <span class="bad" id="score-bad">✗0</span></span>
+  </div>
+  <div class="round-badge" id="round-badge">🔁 Wiederholungsrunde — falsch beantwortete Wörter</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="card" id="card">
+    <div class="creative-type-badge" id="creative-type-badge" style="display:none"></div>
+    <div class="card-label" id="card-label"></div>
+    <div class="card-sec" id="card-sec"></div>
+    <div class="card-word" id="card-word"></div>
+    <div class="creative-prompt" id="creative-prompt" style="display:none"></div>
+    <img class="creative-image" id="creative-image" style="display:none" alt="">
+    <div class="ai-loading" id="ai-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>KI denkt nach…</span></div>
+    <div class="ai-response" id="ai-response"></div>
+    <div class="card-feedback" id="card-feedback"></div>
+  </div>
+  <div id="input-area"></div>
+</div>
+
+<!-- SCREEN 5: Achievements -->
+<div id="ach-screen" class="screen" style="align-items:stretch;padding:16px 18px">
+  <div style="max-width:560px;width:100%;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <button class="btn-back" onclick="showScreen('filter-screen')">← zurück</button>
+      <h2 style="margin:0">🏆 Achievements</h2>
+    </div>
+    <!-- XP summary -->
+    <div style="background:#1a2540;border-radius:14px;padding:16px;margin-bottom:16px;display:flex;gap:16px;align-items:center">
+      <div style="text-align:center;flex:1">
+        <div style="font-size:28px;font-weight:900;color:#F5E642" id="ach-level">1</div>
+        <div style="font-size:11px;color:#8899bb">Level</div>
+      </div>
+      <div style="text-align:center;flex:1">
+        <div style="font-size:28px;font-weight:900;color:#4ECDC4" id="ach-xp">0</div>
+        <div style="font-size:11px;color:#8899bb">Gesamt-XP</div>
+      </div>
+      <div style="text-align:center;flex:1">
+        <div style="font-size:28px;font-weight:900;color:#a78bfa" id="ach-unlocked">0</div>
+        <div style="font-size:11px;color:#8899bb">Achievements</div>
+      </div>
+    </div>
+    <div id="ach-list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- SCREEN 4: Result -->
+<div id="result-screen" class="screen screen-center">
+  <div class="result-box">
+    <div class="result-emoji" id="result-emoji"></div>
+    <div class="result-pct" id="result-pct"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-rounds" id="result-rounds"></div>
+    <div class="btn-row">
+      <button class="btn-y" onclick="restartQuiz()">Nochmal</button>
+      <button class="btn-t" onclick="showScreen('mode-screen')">Andere Einstellung</button>
+      <button class="btn-ghost" onclick="showScreen('filter-screen')">← Auswahl</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Vocab data injected below ──
+const ALL_VOCAB = [{en:"yes",de:"ja",sec:"PUA",pos:"PHR",topic:"language"},{en:"no",de:"nein",sec:"PUA",pos:"PHR",topic:"language"},{en:"Hello",de:"Hallo",sec:"PUA",pos:"PHR",topic:"language"},{en:"Sorry!",de:"Entschuldigung! / Tut mir leid!",sec:"PUA",pos:"PHR",topic:"language"},{en:"Thank you",de:"Danke",sec:"PUA",pos:"PHR",topic:"language"},{en:"please",de:"bitte",sec:"PUA",pos:"PHR",topic:"language"},{en:"animal",de:"das Tier",sec:"PUA",pos:"N",topic:"nature"},{en:"school",de:"die Schule",sec:"PUA",pos:"N",topic:"school"},{en:"mouse",de:"die Maus",sec:"PUA",pos:"N",topic:"nature"},{en:"word",de:"das Wort",sec:"PUA",pos:"N",topic:"language"},{en:"puzzle",de:"das Rätsel",sec:"PUA",pos:"N",topic:"leisure"},{en:"rat",de:"die Ratte",sec:"PUA",pos:"N",topic:"nature"},{en:"colour",de:"die Farbe",sec:"PUA",pos:"N",topic:"language"},{en:"number",de:"die Zahl / die Nummer",sec:"PUA",pos:"N",topic:"time"},{en:"picture",de:"das Bild / das Foto",sec:"PUA",pos:"N",topic:"leisure"},{en:"people",de:"die Leute / die Menschen",sec:"PUA",pos:"N",topic:"language"},{en:"thing",de:"das Ding / die Sache",sec:"PUA",pos:"N",topic:"language"},{en:"alphabet",de:"das Alphabet",sec:"PUA",pos:"N",topic:"language"},{en:"black",de:"schwarz",sec:"PUA",pos:"ADJ",topic:"language"},{en:"blue",de:"blau",sec:"PUA",pos:"ADJ",topic:"language"},{en:"brown",de:"braun",sec:"PUA",pos:"ADJ",topic:"language"},{en:"green",de:"grün",sec:"PUA",pos:"ADJ",topic:"language"},{en:"grey",de:"grau",sec:"PUA",pos:"ADJ",topic:"language"},{en:"orange",de:"orange",sec:"PUA",pos:"ADJ",topic:"language"},{en:"pink",de:"rosa / pink",sec:"PUA",pos:"ADJ",topic:"language"},{en:"purple",de:"violett / lila",sec:"PUA",pos:"ADJ",topic:"language"},{en:"red",de:"rot",sec:"PUA",pos:"ADJ",topic:"language"},{en:"white",de:"weiß",sec:"PUA",pos:"ADJ",topic:"language"},{en:"yellow",de:"gelb",sec:"PUA",pos:"ADJ",topic:"language"},{en:"one",de:"eins",sec:"PUA",pos:"NUM",topic:"time"},{en:"two",de:"zwei",sec:"PUA",pos:"NUM",topic:"time"},{en:"three",de:"drei",sec:"PUA",pos:"NUM",topic:"time"},{en:"four",de:"vier",sec:"PUA",pos:"NUM",topic:"time"},{en:"five",de:"fünf",sec:"PUA",pos:"NUM",topic:"time"},{en:"six",de:"sechs",sec:"PUA",pos:"NUM",topic:"time"},{en:"seven",de:"sieben",sec:"PUA",pos:"NUM",topic:"time"},{en:"eight",de:"acht",sec:"PUA",pos:"NUM",topic:"time"},{en:"nine",de:"neun",sec:"PUA",pos:"NUM",topic:"time"},{en:"ten",de:"zehn",sec:"PUA",pos:"NUM",topic:"time"},{en:"eleven",de:"elf",sec:"PUA",pos:"NUM",topic:"time"},{en:"twelve",de:"zwölf",sec:"PUA",pos:"NUM",topic:"time"},{en:"different",de:"anders / unterschiedlich",sec:"PUA",pos:"ADJ",topic:"language"},{en:"the same",de:"der-/dieselbe / der/die gleiche",sec:"PUA",pos:"ADJ",topic:"language"},{en:"family",de:"die Familie",sec:"U1",pos:"N",topic:"family"},{en:"to live",de:"wohnen / leben",sec:"U1",pos:"V",topic:"home"},{en:"flat",de:"die Wohnung",sec:"U1",pos:"N",topic:"home"},{en:"house",de:"das Haus",sec:"U1",pos:"N",topic:"home"},{en:"door",de:"die Tür",sec:"U1",pos:"N",topic:"home"},{en:"TV",de:"der Fernseher",sec:"U1",pos:"N",topic:"home"},{en:"chair",de:"der Stuhl / der Sessel",sec:"U1",pos:"N",topic:"home"},{en:"table",de:"der Tisch",sec:"U1",pos:"N",topic:"home"},{en:"shower",de:"die Dusche",sec:"U1",pos:"N",topic:"home"},{en:"bath",de:"die Badewanne",sec:"U1",pos:"N",topic:"home"},{en:"toilet",de:"die Toilette",sec:"U1",pos:"N",topic:"home"},{en:"bed",de:"das Bett",sec:"U1",pos:"N",topic:"home"},{en:"clock",de:"die Uhr",sec:"U1",pos:"N",topic:"home"},{en:"wardrobe",de:"der Kleiderschrank",sec:"U1",pos:"N",topic:"home"},{en:"cupboard",de:"der Küchenschrank / der Schrank",sec:"U1",pos:"N",topic:"home"},{en:"cooker",de:"der Herd",sec:"U1",pos:"N",topic:"home"},{en:"living room",de:"das Wohnzimmer",sec:"U1",pos:"N",topic:"home"},{en:"bedroom",de:"das Schlafzimmer",sec:"U1",pos:"N",topic:"home"},{en:"kitchen",de:"die Küche",sec:"U1",pos:"N",topic:"home"},{en:"bathroom",de:"das Badezimmer",sec:"U1",pos:"N",topic:"home"},{en:"good",de:"gut",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"biscuit",de:"der Keks",sec:"U1",pos:"N",topic:"food"},{en:"new",de:"neu",sec:"U1",pos:"ADJ",topic:"language"},{en:"small",de:"klein",sec:"U1",pos:"ADJ",topic:"language"},{en:"to help",de:"helfen",sec:"U1",pos:"V",topic:"school"},{en:"to collect",de:"sammeln",sec:"U1",pos:"V",topic:"leisure"},{en:"under",de:"unter",sec:"U1",pos:"PREP",topic:"language"},{en:"sister",de:"die Schwester",sec:"U1",pos:"N",topic:"family"},{en:"brother",de:"der Bruder",sec:"U1",pos:"N",topic:"family"},{en:"father",de:"der Vater",sec:"U1",pos:"N",topic:"family"},{en:"mother",de:"die Mutter",sec:"U1",pos:"N",topic:"family"},{en:"cousin",de:"der Cousin / die Cousine",sec:"U1",pos:"N",topic:"family"},{en:"only child",de:"das Einzelkind",sec:"U1",pos:"N",topic:"family"},{en:"dad",de:"der Papa",sec:"U1",pos:"N",topic:"family"},{en:"mum",de:"die Mama",sec:"U1",pos:"N",topic:"family"},{en:"uncle",de:"der Onkel",sec:"U1",pos:"N",topic:"family"},{en:"aunt",de:"die Tante",sec:"U1",pos:"N",topic:"family"},{en:"grandad",de:"der Opa",sec:"U1",pos:"N",topic:"family"},{en:"grandma",de:"die Oma",sec:"U1",pos:"N",topic:"family"},{en:"grandparents",de:"die Großeltern",sec:"U1",pos:"N",topic:"family"},{en:"family tree",de:"der Stammbaum",sec:"U1",pos:"N",topic:"family"},{en:"always",de:"immer / ständig",sec:"U1",pos:"ADJ",topic:"language"},{en:"easy",de:"einfach / leicht",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"nice",de:"nett / schön / lieb",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"cool",de:"cool / super",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"great",de:"toll / super / großartig",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"fun",de:"lustig / witzig / fröhlich",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"OK",de:"o.k. / in Ordnung",sec:"U1",pos:"ADJ",topic:"language"},{en:"crazy",de:"verrückt",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"quiet",de:"still / ruhig / leise",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"tall",de:"groß / hoch",sec:"U1",pos:"ADJ",topic:"language"},{en:"wrong",de:"falsch",sec:"U1",pos:"ADJ",topic:"language"},{en:"very",de:"sehr",sec:"U1",pos:"ADJ",topic:"language"},{en:"some",de:"einige / ein paar",sec:"U1",pos:"ADJ",topic:"language"},{en:"only",de:"erst / bloß / nur",sec:"U1",pos:"ADJ",topic:"language"},{en:"language",de:"die Sprache",sec:"U1",pos:"N",topic:"language"},{en:"guinea pig",de:"das Meerschweinchen",sec:"U1",pos:"N",topic:"nature"},{en:"garden",de:"der Garten",sec:"U1",pos:"N",topic:"home"},{en:"car",de:"das Auto",sec:"U1",pos:"N",topic:"home"},{en:"floor",de:"der Fußboden",sec:"U1",pos:"N",topic:"home"},{en:"idea",de:"die Idee",sec:"U1",pos:"N",topic:"language"},{en:"now",de:"jetzt / nun",sec:"U1",pos:"ADJ",topic:"time"},{en:"again",de:"wieder / noch einmal",sec:"U1",pos:"ADJ",topic:"language"},{en:"behind",de:"hinter",sec:"U1",pos:"PREP",topic:"language"},{en:"next to",de:"neben",sec:"U1",pos:"PREP",topic:"language"},{en:"in front of",de:"vor",sec:"U1",pos:"PREP",topic:"language"},{en:"on the right",de:"rechts / auf der rechten Seite",sec:"U1",pos:"PREP",topic:"language"},{en:"on the left",de:"links / auf der linken Seite",sec:"U1",pos:"PREP",topic:"language"},{en:"in the middle of",de:"in der Mitte von / mitten in",sec:"U1",pos:"PREP",topic:"language"},{en:"answer",de:"die Antwort",sec:"U1",pos:"N",topic:"school"},{en:"wall",de:"die Wand / die Mauer",sec:"U1",pos:"N",topic:"home"},{en:"fridge",de:"der Kühlschrank",sec:"U1",pos:"N",topic:"home"},{en:"address",de:"die Adresse",sec:"U1",pos:"N",topic:"home"},{en:"to remember",de:"sich erinnern / sich merken",sec:"U1",pos:"V",topic:"language"},{en:"or",de:"oder",sec:"U1",pos:"PHR",topic:"language"},{en:"more",de:"mehr / weitere",sec:"U1",pos:"ADJ",topic:"language"},{en:"thirteen",de:"dreizehn",sec:"U1",pos:"NUM",topic:"time"},{en:"fourteen",de:"vierzehn",sec:"U1",pos:"NUM",topic:"time"},{en:"fifteen",de:"fünfzehn",sec:"U1",pos:"NUM",topic:"time"},{en:"sixteen",de:"sechzehn",sec:"U1",pos:"NUM",topic:"time"},{en:"seventeen",de:"siebzehn",sec:"U1",pos:"NUM",topic:"time"},{en:"eighteen",de:"achtzehn",sec:"U1",pos:"NUM",topic:"time"},{en:"nineteen",de:"neunzehn",sec:"U1",pos:"NUM",topic:"time"},{en:"twenty",de:"zwanzig",sec:"U1",pos:"NUM",topic:"time"},{en:"twenty-one",de:"einundzwanzig",sec:"U1",pos:"NUM",topic:"time"},{en:"thirty",de:"dreißig",sec:"U1",pos:"NUM",topic:"time"},{en:"forty",de:"vierzig",sec:"U1",pos:"NUM",topic:"time"},{en:"fifty",de:"fünfzig",sec:"U1",pos:"NUM",topic:"time"},{en:"sixty",de:"sechzig",sec:"U1",pos:"NUM",topic:"time"},{en:"seventy",de:"siebzig",sec:"U1",pos:"NUM",topic:"time"},{en:"eighty",de:"achtzig",sec:"U1",pos:"NUM",topic:"time"},{en:"ninety",de:"neunzig",sec:"U1",pos:"NUM",topic:"time"},{en:"a hundred",de:"hundert",sec:"U1",pos:"NUM",topic:"time"},{en:"to draw",de:"zeichnen",sec:"U1",pos:"V",topic:"leisure"},{en:"fantasy",de:"die Fantasie / der Traum",sec:"U1",pos:"N",topic:"feelings"},{en:"loft",de:"der Dachboden",sec:"U1",pos:"N",topic:"home"},{en:"busy",de:"beschäftigt / belebt",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"best",de:"beste/-r/-s",sec:"U1",pos:"ADJ",topic:"language"},{en:"bag",de:"die Tasche / die Tüte",sec:"U1",pos:"N",topic:"shopping"},{en:"maybe",de:"vielleicht",sec:"U1",pos:"ADJ",topic:"language"},{en:"after",de:"nach / danach",sec:"U1",pos:"PREP",topic:"time"},{en:"outside",de:"draußen / nach draußen",sec:"U1",pos:"ADJ",topic:"language"},{en:"awful",de:"schrecklich / furchtbar",sec:"U1",pos:"ADJ",topic:"feelings"},{en:"sentence",de:"der Satz",sec:"U1",pos:"N",topic:"language"},{en:"right",de:"richtig / korrekt",sec:"U1",pos:"ADJ",topic:"language"},{en:"ending",de:"das Ende / der Schluss",sec:"U1",pos:"N",topic:"language"},{en:"visit",de:"der Besuch",sec:"U1",pos:"N",topic:"leisure"},{en:"who",de:"wer / wem / wen",sec:"U1",pos:"PRO",topic:"language"},{en:"to explore",de:"erkunden",sec:"U1",pos:"V",topic:"leisure"},{en:"day",de:"der Tag",sec:"PUB",pos:"N",topic:"time"},{en:"happy",de:"glücklich / fröhlich",sec:"PUB",pos:"ADJ",topic:"feelings"},{en:"to meet",de:"treffen / sich treffen",sec:"PUB",pos:"V",topic:"leisure"},{en:"to show",de:"zeigen",sec:"PUB",pos:"V",topic:"language"},{en:"game",de:"das Spiel",sec:"PUB",pos:"N",topic:"leisure"},{en:"to want",de:"wollen",sec:"PUB",pos:"V",topic:"language"},{en:"to play",de:"spielen",sec:"PUB",pos:"V",topic:"leisure"},{en:"boring",de:"langweilig",sec:"PUB",pos:"ADJ",topic:"feelings"},{en:"fast",de:"schnell",sec:"PUB",pos:"ADJ",topic:"language"},{en:"cute",de:"niedlich / süß",sec:"PUB",pos:"ADJ",topic:"feelings"},{en:"lucky charm",de:"der Glücksbringer / der Talisman",sec:"PUB",pos:"N",topic:"leisure"},{en:"music",de:"die Musik",sec:"PUB",pos:"N",topic:"leisure"},{en:"to read",de:"lesen",sec:"PUB",pos:"V",topic:"leisure"},{en:"book",de:"das Buch",sec:"PUB",pos:"N",topic:"leisure"},{en:"to watch",de:"beobachten / sich ansehen",sec:"PUB",pos:"V",topic:"leisure"},{en:"to watch TV",de:"fernsehen",sec:"PUB",pos:"V",topic:"leisure"},{en:"to paint",de:"anmalen / malen",sec:"PUB",pos:"V",topic:"leisure"},{en:"to go swimming",de:"schwimmen gehen",sec:"PUB",pos:"V",topic:"leisure"},{en:"to take photos",de:"fotografieren",sec:"PUB",pos:"V",topic:"leisure"},{en:"card",de:"die Karte / die Spielkarte",sec:"PUB",pos:"N",topic:"leisure"},{en:"magazine",de:"die Zeitschrift",sec:"PUB",pos:"N",topic:"leisure"},{en:"DVD",de:"die DVD",sec:"PUB",pos:"N",topic:"leisure"},{en:"bike",de:"das Fahrrad",sec:"PUB",pos:"N",topic:"leisure"},{en:"silly",de:"dumm / albern",sec:"PUB",pos:"ADJ",topic:"feelings"},{en:"so",de:"so / also",sec:"PUB",pos:"ADJ",topic:"language"},{en:"reading",de:"das Lesen",sec:"PUB",pos:"N",topic:"leisure"},{en:"text message",de:"die SMS / die Kurznachricht",sec:"PUB",pos:"N",topic:"language"},{en:"rule",de:"die Regel",sec:"U2",pos:"N",topic:"school"},{en:"lunch",de:"das Mittagessen",sec:"U2",pos:"N",topic:"food"},{en:"money",de:"das Geld",sec:"U2",pos:"N",topic:"shopping"},{en:"to pay",de:"bezahlen",sec:"U2",pos:"V",topic:"shopping"},{en:"to buy",de:"kaufen",sec:"U2",pos:"V",topic:"shopping"},{en:"shop",de:"das Geschäft / der Laden",sec:"U2",pos:"N",topic:"shopping"},{en:"pen",de:"der Füller",sec:"U2",pos:"N",topic:"school"},{en:"pencil",de:"der Bleistift",sec:"U2",pos:"N",topic:"school"},{en:"pencil case",de:"das Federmäppchen",sec:"U2",pos:"N",topic:"school"},{en:"exercise book",de:"das Übungsheft",sec:"U2",pos:"N",topic:"school"},{en:"ruler",de:"das Lineal",sec:"U2",pos:"N",topic:"school"},{en:"rubber",de:"der Radiergummi",sec:"U2",pos:"N",topic:"school"},{en:"uniform",de:"die Uniform",sec:"U2",pos:"N",topic:"school"},{en:"classroom",de:"das Klassenzimmer",sec:"U2",pos:"N",topic:"school"},{en:"classmate",de:"der Mitschüler / die Mitschülerin",sec:"U2",pos:"N",topic:"school"},{en:"cafeteria",de:"die Cafeteria",sec:"U2",pos:"N",topic:"school"},{en:"machine",de:"der Automat / die Maschine",sec:"U2",pos:"N",topic:"school"},{en:"finger",de:"der Finger",sec:"U2",pos:"N",topic:"family"},{en:"sweets",de:"die Süßigkeiten",sec:"U2",pos:"N",topic:"food"},{en:"recording studio",de:"das Tonstudio",sec:"U2",pos:"N",topic:"school"},{en:"tutor",de:"der Klassenlehrer / die Klassenlehrerin",sec:"U2",pos:"N",topic:"school"},{en:"question",de:"die Frage",sec:"U2",pos:"N",topic:"school"},{en:"today",de:"heute",sec:"U2",pos:"ADJ",topic:"time"},{en:"schoolbag",de:"die Schultasche",sec:"U2",pos:"N",topic:"school"},{en:"student",de:"der Schüler / die Schülerin",sec:"U2",pos:"N",topic:"school"},{en:"everyone",de:"jeder / alle",sec:"U2",pos:"PRO",topic:"language"},{en:"to sing",de:"singen",sec:"U2",pos:"V",topic:"leisure"},{en:"to dance",de:"tanzen",sec:"U2",pos:"V",topic:"leisure"},{en:"something",de:"etwas",sec:"U2",pos:"PRO",topic:"language"},{en:"teacher",de:"der Lehrer / die Lehrerin",sec:"U2",pos:"N",topic:"school"},{en:"board",de:"die Tafel",sec:"U2",pos:"N",topic:"school"},{en:"group",de:"die Gruppe / die Klasse",sec:"U2",pos:"N",topic:"school"},{en:"food",de:"das Essen / die Lebensmittel",sec:"U2",pos:"N",topic:"food"},{en:"carrot",de:"die Karotte / die Möhre",sec:"U2",pos:"N",topic:"food"},{en:"pudding",de:"der Pudding / der Nachtisch",sec:"U2",pos:"N",topic:"food"},{en:"restaurant",de:"das Restaurant",sec:"U2",pos:"N",topic:"food"},{en:"pocket money",de:"das Taschengeld",sec:"U2",pos:"N",topic:"shopping"},{en:"to use",de:"benutzen / verwenden",sec:"U2",pos:"V",topic:"language"},{en:"lesson",de:"die Unterrichtsstunde",sec:"U2",pos:"N",topic:"school"},{en:"building",de:"das Gebäude",sec:"U2",pos:"N",topic:"places"},{en:"office",de:"das Büro",sec:"U2",pos:"N",topic:"school"},{en:"talent show",de:"der Talentwettbewerb",sec:"U2",pos:"N",topic:"leisure"},{en:"to send",de:"schicken / senden",sec:"U2",pos:"V",topic:"language"},{en:"Art",de:"der Kunstunterricht",sec:"U2",pos:"N",topic:"school"},{en:"English",de:"englisch / aus England",sec:"U2",pos:"N",topic:"school"},{en:"German",de:"deutsch / aus Deutschland",sec:"U2",pos:"N",topic:"school"},{en:"Geography",de:"Erdkunde / die Geografie",sec:"U2",pos:"N",topic:"school"},{en:"Maths",de:"Mathematik / Mathe",sec:"U2",pos:"N",topic:"school"},{en:"Science",de:"die Naturwissenschaften",sec:"U2",pos:"N",topic:"school"},{en:"PE",de:"der Sportunterricht",sec:"U2",pos:"N",topic:"school"},{en:"rude",de:"unhöflich / unverschämt",sec:"U2",pos:"ADJ",topic:"feelings"},{en:"funny",de:"lustig / witzig",sec:"U2",pos:"ADJ",topic:"feelings"},{en:"to sit",de:"sitzen",sec:"U2",pos:"V",topic:"language"},{en:"lunch break",de:"die Mittagspause",sec:"U2",pos:"N",topic:"school"},{en:"them",de:"sie / ihnen",sec:"U2",pos:"PRO",topic:"language"},{en:"to forget",de:"vergessen",sec:"U2",pos:"V",topic:"language"},{en:"to do",de:"machen / tun",sec:"U2",pos:"V",topic:"language"},{en:"alone",de:"allein",sec:"U2",pos:"ADJ",topic:"feelings"},{en:"to bring",de:"bringen / mitbringen",sec:"U2",pos:"V",topic:"language"},{en:"to wear",de:"tragen / anhaben",sec:"U2",pos:"V",topic:"shopping"},{en:"to run",de:"rennen / laufen",sec:"U2",pos:"V",topic:"leisure"},{en:"homework",de:"die Hausaufgaben",sec:"U2",pos:"N",topic:"school"},{en:"when",de:"wenn / wann / als",sec:"U2",pos:"PHR",topic:"language"},{en:"already",de:"schon / bereits",sec:"U2",pos:"ADJ",topic:"time"},{en:"these",de:"diese (hier)",sec:"U2",pos:"PRO",topic:"language"},{en:"those",de:"diese dort / jene",sec:"U2",pos:"PRO",topic:"language"},{en:"to find",de:"finden / herausfinden",sec:"U2",pos:"V",topic:"language"},{en:"chips",de:"die Pommes frites",sec:"U2",pos:"N",topic:"food"},{en:"over there",de:"da drüben",sec:"U2",pos:"ADJ",topic:"language"},{en:"to practise",de:"üben / trainieren",sec:"U2",pos:"V",topic:"school"},{en:"spelling",de:"die Rechtschreibung",sec:"U2",pos:"N",topic:"school"},{en:"to need",de:"brauchen / benötigen",sec:"U2",pos:"V",topic:"language"},{en:"first",de:"erste/-r/-s",sec:"U2",pos:"NUM",topic:"time"},{en:"to learn",de:"lernen",sec:"U2",pos:"V",topic:"school"},{en:"week",de:"die Woche",sec:"U2",pos:"N",topic:"time"},{en:"before",de:"vor / bevor",sec:"U2",pos:"PREP",topic:"time"},{en:"to work",de:"arbeiten",sec:"U2",pos:"V",topic:"school"},{en:"sure",de:"sicher",sec:"U2",pos:"ADJ",topic:"feelings"},{en:"next",de:"nächste/-r/-s",sec:"U2",pos:"ADJ",topic:"time"},{en:"popular",de:"beliebt / populär",sec:"U2",pos:"ADJ",topic:"feelings"},{en:"to laugh",de:"lachen",sec:"U2",pos:"V",topic:"feelings"},{en:"angry",de:"wütend / verärgert / böse",sec:"U2",pos:"ADJ",topic:"feelings"},{en:"to give",de:"geben / schenken",sec:"U2",pos:"V",topic:"language"},{en:"to think",de:"denken / nachdenken",sec:"U2",pos:"V",topic:"language"},{en:"joke",de:"der Witz",sec:"U2",pos:"N",topic:"leisure"},{en:"really",de:"wirklich",sec:"U2",pos:"ADJ",topic:"language"},{en:"much",de:"viel",sec:"U2",pos:"ADJ",topic:"language"},{en:"time",de:"die Zeit",sec:"U2",pos:"N",topic:"time"},{en:"to know",de:"kennen / wissen",sec:"U2",pos:"V",topic:"language"},{en:"because",de:"weil / da",sec:"U2",pos:"PHR",topic:"language"},{en:"king",de:"der König",sec:"U2",pos:"N",topic:"world"},{en:"class",de:"die Klasse / die Schulklasse",sec:"U2",pos:"N",topic:"school"},{en:"just",de:"gerade / nur / einfach",sec:"U2",pos:"ADJ",topic:"language"},{en:"voice",de:"die Stimme",sec:"U2",pos:"N",topic:"language"},{en:"poem",de:"das Gedicht",sec:"U2",pos:"N",topic:"leisure"},{en:"presentation",de:"die Präsentation",sec:"U2",pos:"N",topic:"school"},{en:"pair",de:"das Paar",sec:"U2",pos:"N",topic:"language"},{en:"recording",de:"die Aufnahme",sec:"U2",pos:"N",topic:"leisure"},{en:"story",de:"die Geschichte / die Erzählung",sec:"U2",pos:"N",topic:"leisure"},{en:"project",de:"das Projekt",sec:"U2",pos:"N",topic:"school"},{en:"planner",de:"das Handbuch / der Kalender",sec:"U2",pos:"N",topic:"school"},{en:"Monday",de:"Montag",sec:"U3",pos:"N",topic:"time"},{en:"Tuesday",de:"Dienstag",sec:"U3",pos:"N",topic:"time"},{en:"Wednesday",de:"Mittwoch",sec:"U3",pos:"N",topic:"time"},{en:"Thursday",de:"Donnerstag",sec:"U3",pos:"N",topic:"time"},{en:"Friday",de:"Freitag",sec:"U3",pos:"N",topic:"time"},{en:"Saturday",de:"Samstag",sec:"U3",pos:"N",topic:"time"},{en:"Sunday",de:"Sonntag",sec:"U3",pos:"N",topic:"time"},{en:"surprise",de:"die Überraschung",sec:"U3",pos:"N",topic:"feelings"},{en:"club",de:"der Klub / der Verein / die AG",sec:"U3",pos:"N",topic:"leisure"},{en:"to sleep",de:"schlafen",sec:"U3",pos:"V",topic:"home"},{en:"to go to bed",de:"ins Bett gehen",sec:"U3",pos:"V",topic:"home"},{en:"dinner",de:"das Abendessen",sec:"U3",pos:"N",topic:"food"},{en:"to come",de:"kommen",sec:"U3",pos:"V",topic:"language"},{en:"every",de:"jede/-r/-s",sec:"U3",pos:"ADJ",topic:"time"},{en:"home",de:"nach Hause",sec:"U3",pos:"N",topic:"home"},{en:"then",de:"dann / danach",sec:"U3",pos:"ADJ",topic:"time"},{en:"a.m.",de:"vormittags",sec:"U3",pos:"N",topic:"time"},{en:"p.m.",de:"nachmittags / abends",sec:"U3",pos:"N",topic:"time"},{en:"to have breakfast",de:"frühstücken",sec:"U3",pos:"V",topic:"food"},{en:"to tidy",de:"aufräumen",sec:"U3",pos:"V",topic:"home"},{en:"to sit down",de:"sich setzen",sec:"U3",pos:"V",topic:"language"},{en:"morning",de:"der Morgen / der Vormittag",sec:"U3",pos:"N",topic:"time"},{en:"never",de:"nie / niemals",sec:"U3",pos:"ADJ",topic:"time"},{en:"often",de:"oft / häufig",sec:"U3",pos:"ADJ",topic:"time"},{en:"sometimes",de:"manchmal",sec:"U3",pos:"ADJ",topic:"time"},{en:"usually",de:"normalerweise / meistens",sec:"U3",pos:"ADJ",topic:"time"},{en:"long",de:"lang",sec:"U3",pos:"ADJ",topic:"language"},{en:"tired",de:"müde",sec:"U3",pos:"ADJ",topic:"feelings"},{en:"afternoon",de:"der Nachmittag",sec:"U3",pos:"N",topic:"time"},{en:"evening",de:"der Abend",sec:"U3",pos:"N",topic:"time"},{en:"tomorrow",de:"morgen",sec:"U3",pos:"N",topic:"time"},{en:"last",de:"letzte/-r/-s",sec:"U3",pos:"ADJ",topic:"time"},{en:"other",de:"andere/-r/-s / weitere",sec:"U3",pos:"ADJ",topic:"language"},{en:"till",de:"bis",sec:"U3",pos:"PREP",topic:"time"},{en:"if",de:"wenn / falls / ob",sec:"U3",pos:"PHR",topic:"language"},{en:"after that",de:"danach",sec:"U3",pos:"ADJ",topic:"time"},{en:"right away",de:"sofort / gleich",sec:"U3",pos:"ADJ",topic:"time"},{en:"netball",de:"das Korbball",sec:"U3",pos:"N",topic:"leisure"},{en:"stepmum",de:"die Stiefmutter",sec:"U3",pos:"N",topic:"family"},{en:"roommate",de:"der Zimmergenosse",sec:"U3",pos:"N",topic:"home"},{en:"coach",de:"der Trainer / die Trainerin",sec:"U3",pos:"N",topic:"leisure"},{en:"to snore",de:"schnarchen",sec:"U3",pos:"V",topic:"home"},{en:"to look after",de:"aufpassen auf / sich kümmern um",sec:"U3",pos:"V",topic:"family"},{en:"to ask",de:"fragen / bitten",sec:"U3",pos:"V",topic:"language"},{en:"to talk",de:"sprechen / reden",sec:"U3",pos:"V",topic:"language"},{en:"to stop",de:"aufhören / stoppen",sec:"U3",pos:"V",topic:"language"},{en:"to chat",de:"plaudern / chatten",sec:"U3",pos:"V",topic:"language"},{en:"even",de:"sogar / selbst",sec:"U3",pos:"ADJ",topic:"language"},{en:"work",de:"die Arbeit",sec:"U3",pos:"N",topic:"school"},{en:"vet",de:"der Tierarzt / die Tierärztin",sec:"U3",pos:"N",topic:"nature"},{en:"neighbour",de:"der Nachbar / die Nachbarin",sec:"U3",pos:"N",topic:"home"},{en:"pet",de:"das Haustier",sec:"U3",pos:"N",topic:"nature"},{en:"why",de:"warum",sec:"U3",pos:"PHR",topic:"language"},{en:"mistake",de:"der Fehler",sec:"U3",pos:"N",topic:"school"},{en:"to find out",de:"herausfinden",sec:"U3",pos:"V",topic:"language"},{en:"situation",de:"die Situation",sec:"U3",pos:"N",topic:"language"},{en:"surgery",de:"die Arztpraxis",sec:"U3",pos:"N",topic:"places"},{en:"cooking",de:"das Kochen",sec:"U3",pos:"N",topic:"food"},{en:"dialogue",de:"der Dialog / das Gespräch",sec:"U3",pos:"N",topic:"language"},{en:"face",de:"das Gesicht",sec:"U3",pos:"N",topic:"family"},{en:"early",de:"früh",sec:"U3",pos:"ADJ",topic:"time"},{en:"shoe",de:"der Schuh",sec:"U3",pos:"N",topic:"shopping"},{en:"hand",de:"die Hand",sec:"U3",pos:"N",topic:"family"},{en:"mouth",de:"der Mund",sec:"U3",pos:"N",topic:"family"},{en:"drink",de:"das Getränk",sec:"U3",pos:"N",topic:"food"},{en:"to put",de:"setzen / stellen / legen",sec:"U3",pos:"V",topic:"language"},{en:"to fall",de:"fallen / hinfallen",sec:"U3",pos:"V",topic:"language"},{en:"to throw",de:"werfen",sec:"U3",pos:"V",topic:"leisure"},{en:"to chase",de:"jagen / nachjagen",sec:"U3",pos:"V",topic:"nature"},{en:"tail",de:"der Schwanz",sec:"U3",pos:"N",topic:"nature"},{en:"to bark",de:"bellen",sec:"U3",pos:"V",topic:"nature"},{en:"to wash",de:"waschen / sich waschen",sec:"U3",pos:"V",topic:"home"},{en:"sound",de:"der Ton / das Geräusch",sec:"U3",pos:"N",topic:"language"},{en:"rhythm",de:"der Rhythmus",sec:"U3",pos:"N",topic:"leisure"},{en:"loud",de:"laut",sec:"U3",pos:"ADJ",topic:"language"},{en:"to speak",de:"sprechen",sec:"U3",pos:"V",topic:"language"},{en:"clear",de:"klar / deutlich",sec:"U3",pos:"ADJ",topic:"language"},{en:"typical",de:"typisch",sec:"U3",pos:"ADJ",topic:"language"},{en:"country",de:"das Land",sec:"U3",pos:"N",topic:"world"},{en:"interesting",de:"interessant",sec:"U3",pos:"ADJ",topic:"feelings"},{en:"to describe",de:"beschreiben",sec:"U3",pos:"V",topic:"language"},{en:"scene",de:"die Szene",sec:"U3",pos:"N",topic:"leisure"},{en:"cheese",de:"der Käse",sec:"U3",pos:"N",topic:"food"},{en:"to visit",de:"besichtigen / besuchen",sec:"AC1",pos:"V",topic:"places"},{en:"important",de:"wichtig",sec:"AC1",pos:"ADJ",topic:"language"},{en:"smile",de:"das Lächeln",sec:"AC1",pos:"N",topic:"feelings"},{en:"way",de:"der Weg / die Art und Weise",sec:"AC1",pos:"N",topic:"places"},{en:"lemonade",de:"die Limonade",sec:"AC1",pos:"N",topic:"food"},{en:"timetable",de:"der Stundenplan / der Fahrplan",sec:"AC1",pos:"N",topic:"school"},{en:"bus station",de:"der Busbahnhof",sec:"AC1",pos:"N",topic:"places"},{en:"person",de:"die Person / der Mensch",sec:"AC1",pos:"N",topic:"language"},{en:"train",de:"der Zug",sec:"AC1",pos:"N",topic:"places"},{en:"window",de:"das Fenster",sec:"AC1",pos:"N",topic:"home"},{en:"to open",de:"öffnen / aufmachen",sec:"AC1",pos:"V",topic:"home"},{en:"to hold",de:"halten / festhalten",sec:"AC1",pos:"V",topic:"language"},{en:"woman",de:"die Frau",sec:"AC1",pos:"N",topic:"family"},{en:"man",de:"der Mann",sec:"AC1",pos:"N",topic:"family"},{en:"British",de:"britisch / der Brite",sec:"AC1",pos:"ADJ",topic:"world"},{en:"escalator",de:"die Rolltreppe",sec:"AC1",pos:"N",topic:"places"},{en:"to stand",de:"stehen",sec:"AC1",pos:"V",topic:"language"},{en:"to walk",de:"gehen / laufen",sec:"AC1",pos:"V",topic:"leisure"},{en:"of course",de:"natürlich / selbstverständlich",sec:"AC1",pos:"PHR",topic:"language"},{en:"box",de:"die Box / der Kasten",sec:"AC1",pos:"N",topic:"home"},{en:"page",de:"die Seite",sec:"AC1",pos:"N",topic:"school"},{en:"castle",de:"das Schloss / die Burg",sec:"F1",pos:"N",topic:"places"},{en:"flag",de:"die Flagge / die Fahne",sec:"F1",pos:"N",topic:"world"},{en:"beach",de:"der Strand",sec:"F1",pos:"N",topic:"nature"},{en:"sea",de:"das Meer",sec:"F1",pos:"N",topic:"nature"},{en:"cold",de:"kalt",sec:"F1",pos:"ADJ",topic:"nature"},{en:"rock",de:"der Fels / der Stein",sec:"F1",pos:"N",topic:"nature"},{en:"special",de:"besonders / speziell",sec:"F1",pos:"ADJ",topic:"language"},{en:"shape",de:"die Form",sec:"F1",pos:"N",topic:"language"},{en:"high",de:"hoch / groß",sec:"F1",pos:"ADJ",topic:"language"},{en:"mountain",de:"der Berg",sec:"F1",pos:"N",topic:"nature"},{en:"forest",de:"der Wald",sec:"F1",pos:"N",topic:"nature"},{en:"island",de:"die Insel",sec:"F1",pos:"N",topic:"nature"},{en:"map",de:"der Stadtplan / die Landkarte",sec:"F1",pos:"N",topic:"places"},{en:"north",de:"der Norden",sec:"F1",pos:"N",topic:"places"},{en:"east",de:"der Osten",sec:"F1",pos:"N",topic:"places"},{en:"south",de:"der Süden",sec:"F1",pos:"N",topic:"places"},{en:"west",de:"der Westen",sec:"F1",pos:"N",topic:"places"},{en:"river",de:"der Fluss",sec:"F1",pos:"N",topic:"nature"},{en:"lake",de:"der See",sec:"F1",pos:"N",topic:"nature"},{en:"sheep",de:"das Schaf",sec:"F1",pos:"N",topic:"nature"},{en:"surfing",de:"das Surfen",sec:"F1",pos:"N",topic:"leisure"},{en:"hiking",de:"das Wandern",sec:"F1",pos:"N",topic:"leisure"},{en:"mountain biking",de:"das Mountainbikefahren",sec:"F1",pos:"N",topic:"leisure"},{en:"skiing",de:"das Skifahren",sec:"F1",pos:"N",topic:"leisure"},{en:"canoeing",de:"das Kanufahren",sec:"F1",pos:"N",topic:"leisure"},{en:"camping",de:"das Camping / das Zelten",sec:"F1",pos:"N",topic:"leisure"},{en:"museum",de:"das Museum",sec:"F1",pos:"N",topic:"places"},{en:"capital",de:"die Hauptstadt",sec:"F1",pos:"N",topic:"world"},{en:"city",de:"die Stadt / die Großstadt",sec:"F1",pos:"N",topic:"places"},{en:"famous",de:"berühmt",sec:"F1",pos:"ADJ",topic:"world"},{en:"sight",de:"die Sehenswürdigkeit",sec:"F1",pos:"N",topic:"places"},{en:"queen",de:"die Königin",sec:"F1",pos:"N",topic:"world"},{en:"to ride",de:"fahren / reiten",sec:"F1",pos:"V",topic:"leisure"},{en:"town",de:"die Stadt",sec:"F1",pos:"N",topic:"places"},{en:"near",de:"nahe / in der Nähe von",sec:"F1",pos:"PREP",topic:"places"},{en:"village",de:"das Dorf",sec:"F1",pos:"N",topic:"places"},{en:"church",de:"die Kirche",sec:"F1",pos:"N",topic:"places"},{en:"cinema",de:"das Kino",sec:"F1",pos:"N",topic:"leisure"},{en:"theatre",de:"das Theater",sec:"F1",pos:"N",topic:"leisure"},{en:"concert",de:"das Konzert",sec:"F1",pos:"N",topic:"leisure"},{en:"fact",de:"der Fakt / die Tatsache",sec:"F1",pos:"N",topic:"language"},{en:"separate",de:"separat / getrennt",sec:"F1",pos:"ADJ",topic:"language"},{en:"ship",de:"das Schiff",sec:"U4",pos:"N",topic:"places"},{en:"free",de:"frei / kostenlos",sec:"U4",pos:"ADJ",topic:"shopping"},{en:"free time",de:"die Freizeit",sec:"U4",pos:"N",topic:"leisure"},{en:"to start",de:"anfangen / beginnen",sec:"U4",pos:"V",topic:"language"},{en:"water slide",de:"die Wasserrutsche",sec:"U4",pos:"N",topic:"leisure"},{en:"leisure centre",de:"das Freizeitzentrum",sec:"U4",pos:"N",topic:"leisure"},{en:"foot",de:"der Fuß",sec:"U4",pos:"N",topic:"family"},{en:"pier",de:"das Pier",sec:"U4",pos:"N",topic:"places"},{en:"together",de:"zusammen",sec:"U4",pos:"ADJ",topic:"language"},{en:"at the weekend",de:"am Wochenende",sec:"U4",pos:"N",topic:"time"},{en:"exciting",de:"spannend / aufregend",sec:"U4",pos:"ADJ",topic:"feelings"},{en:"to close",de:"schließen / zumachen",sec:"U4",pos:"V",topic:"language"},{en:"enough",de:"genug",sec:"U4",pos:"ADJ",topic:"language"},{en:"fine",de:"gut / in Ordnung",sec:"U4",pos:"ADJ",topic:"feelings"},{en:"information",de:"die Information",sec:"U4",pos:"N",topic:"language"},{en:"all",de:"alle / ganz",sec:"U4",pos:"ADJ",topic:"language"},{en:"weather",de:"das Wetter",sec:"U4",pos:"N",topic:"nature"},{en:"bus",de:"der Bus",sec:"U4",pos:"N",topic:"places"},{en:"bad",de:"schlecht / böse / schlimm",sec:"U4",pos:"ADJ",topic:"feelings"},{en:"pig",de:"das Schwein",sec:"U4",pos:"N",topic:"nature"},{en:"chicken",de:"das Huhn",sec:"U4",pos:"N",topic:"nature"},{en:"horse",de:"das Pferd",sec:"U4",pos:"N",topic:"nature"},{en:"lamb",de:"das Lamm",sec:"U4",pos:"N",topic:"nature"},{en:"market",de:"der Markt",sec:"U4",pos:"N",topic:"shopping"},{en:"to get",de:"bekommen / holen",sec:"U4",pos:"V",topic:"language"},{en:"back",de:"zurück",sec:"U4",pos:"ADJ",topic:"language"},{en:"storm",de:"der Sturm",sec:"U4",pos:"N",topic:"nature"},{en:"wave",de:"die Welle",sec:"U4",pos:"N",topic:"nature"},{en:"dangerous",de:"gefährlich",sec:"U4",pos:"ADJ",topic:"feelings"},{en:"slow",de:"langsam",sec:"U4",pos:"ADJ",topic:"language"},{en:"brave",de:"mutig / tapfer",sec:"U4",pos:"ADJ",topic:"feelings"},{en:"to drink",de:"trinken",sec:"U4",pos:"V",topic:"food"},{en:"to hit",de:"schlagen / treffen",sec:"U4",pos:"V",topic:"leisure"},{en:"to swim",de:"schwimmen",sec:"U4",pos:"V",topic:"leisure"},{en:"to save",de:"retten",sec:"U4",pos:"V",topic:"language"},{en:"lifebuoy",de:"der Rettungsring",sec:"U4",pos:"N",topic:"places"},{en:"lifeboat",de:"das Rettungsboot",sec:"U4",pos:"N",topic:"places"},{en:"to jump",de:"springen",sec:"U4",pos:"V",topic:"leisure"},{en:"to stay",de:"bleiben",sec:"U4",pos:"V",topic:"language"},{en:"captain",de:"der Kapitän",sec:"U4",pos:"N",topic:"places"},{en:"sailor",de:"der Seemann / der Matrose",sec:"U4",pos:"N",topic:"places"},{en:"land",de:"das Land",sec:"U4",pos:"N",topic:"nature"},{en:"to happen",de:"geschehen / passieren",sec:"U4",pos:"V",topic:"language"},{en:"to shout",de:"schreien / rufen",sec:"U4",pos:"V",topic:"language"},{en:"to climb",de:"klettern / besteigen",sec:"U4",pos:"V",topic:"leisure"},{en:"visitor",de:"der Besucher / die Besucherin",sec:"U4",pos:"N",topic:"places"},{en:"tea",de:"der Tee",sec:"U4",pos:"N",topic:"food"},{en:"survey",de:"die Umfrage",sec:"U4",pos:"N",topic:"school"},{en:"half-sister",de:"die Halbschwester",sec:"U4",pos:"N",topic:"family"},{en:"to spell",de:"buchstabieren",sec:"U4",pos:"V",topic:"school"},{en:"to go shopping",de:"einkaufen gehen",sec:"U5",pos:"V",topic:"shopping"},{en:"expensive",de:"teuer",sec:"U5",pos:"ADJ",topic:"shopping"},{en:"cheap",de:"billig / preiswert",sec:"U5",pos:"ADJ",topic:"shopping"},{en:"bottle",de:"die Flasche",sec:"U5",pos:"N",topic:"shopping"},{en:"price",de:"der Preis",sec:"U5",pos:"N",topic:"shopping"},{en:"present",de:"das Geschenk",sec:"U5",pos:"N",topic:"shopping"},{en:"clothes",de:"die Kleidung",sec:"U5",pos:"N",topic:"shopping"},{en:"jewellery",de:"der Schmuck",sec:"U5",pos:"N",topic:"shopping"},{en:"to sell",de:"verkaufen",sec:"U5",pos:"V",topic:"shopping"},{en:"pound",de:"das Pfund",sec:"U5",pos:"N",topic:"shopping"},{en:"euro",de:"der Euro",sec:"U5",pos:"N",topic:"shopping"},{en:"cent",de:"der Cent",sec:"U5",pos:"N",topic:"shopping"},{en:"quality",de:"die Qualität",sec:"U5",pos:"N",topic:"shopping"},{en:"can",de:"die Dose / die Büchse",sec:"U5",pos:"N",topic:"shopping"},{en:"coke",de:"die Cola",sec:"U5",pos:"N",topic:"food"},{en:"packet",de:"das Päckchen / die Packung",sec:"U5",pos:"N",topic:"shopping"},{en:"bracelet",de:"das Armband",sec:"U5",pos:"N",topic:"shopping"},{en:"special offer",de:"das Sonderangebot",sec:"U5",pos:"N",topic:"shopping"},{en:"snack bar",de:"die Snackbar / die Imbissstube",sec:"U5",pos:"N",topic:"food"},{en:"penny",de:"der Penny / die Pence",sec:"U5",pos:"N",topic:"shopping"},{en:"sad",de:"traurig",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"to earn",de:"verdienen",sec:"U5",pos:"V",topic:"shopping"},{en:"flea market",de:"der Flohmarkt",sec:"U5",pos:"N",topic:"shopping"},{en:"toy",de:"das Spielzeug",sec:"U5",pos:"N",topic:"leisure"},{en:"garage",de:"die Garage",sec:"U5",pos:"N",topic:"home"},{en:"to feel",de:"fühlen / sich fühlen",sec:"U5",pos:"V",topic:"feelings"},{en:"hopeful",de:"hoffnungsvoll",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"to ring",de:"klingeln / läuten",sec:"U5",pos:"V",topic:"language"},{en:"full",de:"voll (von)",sec:"U5",pos:"ADJ",topic:"language"},{en:"to throw away",de:"wegwerfen",sec:"U5",pos:"V",topic:"home"},{en:"coffee",de:"der Kaffee",sec:"U5",pos:"N",topic:"food"},{en:"T-shirt",de:"das T-Shirt",sec:"U5",pos:"N",topic:"shopping"},{en:"jeans",de:"die Jeans",sec:"U5",pos:"N",topic:"shopping"},{en:"shirt",de:"das Hemd",sec:"U5",pos:"N",topic:"shopping"},{en:"pullover",de:"der Pullover",sec:"U5",pos:"N",topic:"shopping"},{en:"dress",de:"das Kleid",sec:"U5",pos:"N",topic:"shopping"},{en:"telephone",de:"das Telefon",sec:"U5",pos:"N",topic:"home"},{en:"juice",de:"der Saft",sec:"U5",pos:"N",topic:"food"},{en:"glass",de:"das Glas",sec:"U5",pos:"N",topic:"food"},{en:"any",de:"irgendein/-e",sec:"U5",pos:"ADJ",topic:"language"},{en:"charity",de:"der Wohltätigkeitsverein",sec:"U5",pos:"N",topic:"world"},{en:"community centre",de:"das Gemeindezentrum",sec:"U5",pos:"N",topic:"places"},{en:"to organise",de:"organisieren",sec:"U5",pos:"V",topic:"school"},{en:"year",de:"das Jahr",sec:"U5",pos:"N",topic:"time"},{en:"to clear out",de:"ausräumen / entrümpeln",sec:"U5",pos:"V",topic:"home"},{en:"to make money",de:"Geld verdienen",sec:"U5",pos:"V",topic:"shopping"},{en:"charity shop",de:"der Second-Hand-Laden",sec:"U5",pos:"N",topic:"shopping"},{en:"must",de:"müssen",sec:"U5",pos:"V",topic:"language"},{en:"to be worth",de:"wert sein",sec:"U5",pos:"V",topic:"shopping"},{en:"about",de:"ungefähr / circa / etwa",sec:"U5",pos:"ADJ",topic:"language"},{en:"stuff",de:"das Zeug",sec:"U5",pos:"N",topic:"language"},{en:"everything",de:"alles",sec:"U5",pos:"PRO",topic:"language"},{en:"to ask for",de:"fragen nach / bitten um",sec:"U5",pos:"V",topic:"language"},{en:"bargain",de:"das Schnäppchen",sec:"U5",pos:"N",topic:"shopping"},{en:"to spend",de:"ausgeben (Geld)",sec:"U5",pos:"V",topic:"shopping"},{en:"a little",de:"ein wenig / etwas",sec:"U5",pos:"ADJ",topic:"language"},{en:"anything",de:"irgendetwas",sec:"U5",pos:"PRO",topic:"language"},{en:"nothing",de:"nichts",sec:"U5",pos:"PRO",topic:"language"},{en:"anybody",de:"irgendjemand",sec:"U5",pos:"PRO",topic:"language"},{en:"somebody",de:"jemand",sec:"U5",pos:"PRO",topic:"language"},{en:"nobody",de:"niemand",sec:"U5",pos:"PRO",topic:"language"},{en:"someone",de:"jemand",sec:"U5",pos:"PRO",topic:"language"},{en:"no one",de:"niemand",sec:"U5",pos:"PRO",topic:"language"},{en:"guitar",de:"die Gitarre",sec:"U5",pos:"N",topic:"leisure"},{en:"a couple of",de:"ein paar",sec:"U5",pos:"ADJ",topic:"language"},{en:"answering machine",de:"der Anrufbeantworter",sec:"U5",pos:"N",topic:"home"},{en:"message",de:"die Botschaft / die Nachricht",sec:"U5",pos:"N",topic:"language"},{en:"to call",de:"anrufen / rufen",sec:"U5",pos:"V",topic:"language"},{en:"to leave a message",de:"eine Nachricht hinterlassen",sec:"U5",pos:"V",topic:"language"},{en:"phone call",de:"der Anruf / der Telefonanruf",sec:"U5",pos:"N",topic:"language"},{en:"to answer the phone",de:"einen Anruf entgegennehmen",sec:"U5",pos:"V",topic:"language"},{en:"to put through",de:"verbinden",sec:"U5",pos:"V",topic:"language"},{en:"dictionary",de:"das Wörterbuch",sec:"U5",pos:"N",topic:"school"},{en:"buyer",de:"der Käufer / die Käuferin",sec:"U5",pos:"N",topic:"shopping"},{en:"seller",de:"der Verkäufer / die Verkäuferin",sec:"U5",pos:"N",topic:"shopping"},{en:"goal",de:"das Tor / das Ziel",sec:"U5",pos:"N",topic:"leisure"},{en:"lucky",de:"glücklich / der/die Glückliche",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"raffle",de:"die Tombola",sec:"U5",pos:"N",topic:"leisure"},{en:"prize",de:"der Preis / der Gewinn",sec:"U5",pos:"N",topic:"leisure"},{en:"ticket",de:"das Los / das Ticket",sec:"U5",pos:"N",topic:"shopping"},{en:"to hope",de:"hoffen",sec:"U5",pos:"V",topic:"feelings"},{en:"still",de:"noch / immer noch",sec:"U5",pos:"ADJ",topic:"time"},{en:"broken",de:"kaputt / gebrochen",sec:"U5",pos:"ADJ",topic:"home"},{en:"coin",de:"die Münze",sec:"U5",pos:"N",topic:"shopping"},{en:"half",de:"halb / die Hälfte",sec:"U5",pos:"NUM",topic:"language"},{en:"each",de:"pro Person / pro Stück",sec:"U5",pos:"ADJ",topic:"shopping"},{en:"piece",de:"das Stück",sec:"U5",pos:"N",topic:"language"},{en:"rubbish",de:"der Müll / das Gerümpel",sec:"U5",pos:"N",topic:"home"},{en:"horrified",de:"entsetzt",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"head",de:"der Kopf",sec:"U5",pos:"N",topic:"family"},{en:"to pull",de:"ziehen",sec:"U5",pos:"V",topic:"language"},{en:"disappointed",de:"enttäuscht",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"excited",de:"aufgeregt / begeistert",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"thankful",de:"dankbar",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"helpful",de:"hilfsbereit / hilfreich",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"helpless",de:"hilflos",sec:"U5",pos:"ADJ",topic:"feelings"},{en:"bread",de:"das Brot",sec:"AC2",pos:"N",topic:"food"},{en:"cake",de:"der Kuchen / die Torte",sec:"AC2",pos:"N",topic:"food"},{en:"egg",de:"das Ei",sec:"AC2",pos:"N",topic:"food"},{en:"fish",de:"der Fisch",sec:"AC2",pos:"N",topic:"food"},{en:"fruit",de:"die Frucht / das Obst",sec:"AC2",pos:"N",topic:"food"},{en:"apple",de:"der Apfel",sec:"AC2",pos:"N",topic:"food"},{en:"butter",de:"die Butter",sec:"AC2",pos:"N",topic:"food"},{en:"cereal",de:"das Frühstücksmüsli",sec:"AC2",pos:"N",topic:"food"},{en:"chocolate",de:"die Schokolade",sec:"AC2",pos:"N",topic:"food"},{en:"crisp",de:"der Kartoffelchip",sec:"AC2",pos:"N",topic:"food"},{en:"ham",de:"der Schinken",sec:"AC2",pos:"N",topic:"food"},{en:"nut",de:"die Nuss",sec:"AC2",pos:"N",topic:"food"},{en:"plum",de:"die Pflaume",sec:"AC2",pos:"N",topic:"food"},{en:"strawberry",de:"die Erdbeere",sec:"AC2",pos:"N",topic:"food"},{en:"sweet",de:"süß",sec:"AC2",pos:"ADJ",topic:"food"},{en:"healthy",de:"gesund",sec:"AC2",pos:"ADJ",topic:"food"},{en:"hot",de:"heiß",sec:"AC2",pos:"ADJ",topic:"food"},{en:"supermarket",de:"der Supermarkt",sec:"AC2",pos:"N",topic:"shopping"},{en:"banana",de:"die Banane",sec:"AC2",pos:"N",topic:"food"},{en:"salad",de:"der Salat",sec:"AC2",pos:"N",topic:"food"},{en:"milk",de:"die Milch",sec:"AC2",pos:"N",topic:"food"},{en:"bacon",de:"der Schinkenspeck",sec:"AC2",pos:"N",topic:"food"},{en:"pie",de:"der Kuchen / die Pastete",sec:"AC2",pos:"N",topic:"food"},{en:"strange",de:"fremd / seltsam",sec:"AC2",pos:"ADJ",topic:"feelings"},{en:"quick",de:"schnell",sec:"AC2",pos:"ADJ",topic:"language"},{en:"contest",de:"der Wettkampf / der Wettbewerb",sec:"AC2",pos:"N",topic:"leisure"},{en:"culture",de:"die Kultur",sec:"AC2",pos:"N",topic:"world"},{en:"young",de:"jung",sec:"AC2",pos:"ADJ",topic:"language"},{en:"tomato",de:"die Tomate",sec:"AC2",pos:"N",topic:"food"},{en:"yoghurt",de:"der Joghurt",sec:"AC2",pos:"N",topic:"food"},{en:"world",de:"die Erde / die Welt",sec:"F2",pos:"N",topic:"world"},{en:"independent",de:"unabhängig",sec:"F2",pos:"ADJ",topic:"world"},{en:"government",de:"die Regierung",sec:"F2",pos:"N",topic:"world"},{en:"official language",de:"die Amtssprache",sec:"F2",pos:"N",topic:"world"},{en:"million",de:"die Million",sec:"F2",pos:"NUM",topic:"world"},{en:"first language",de:"die Muttersprache",sec:"F2",pos:"N",topic:"language"},{en:"technology",de:"die Technologie",sec:"F2",pos:"N",topic:"world"},{en:"to communicate",de:"kommunizieren",sec:"F2",pos:"V",topic:"language"},{en:"although",de:"obwohl",sec:"F2",pos:"PHR",topic:"language"},{en:"the USA",de:"die USA",sec:"F2",pos:"N",topic:"world"},{en:"kind",de:"die Art / die Sorte",sec:"F2",pos:"N",topic:"language"},{en:"to make friends",de:"Freundschaft schließen",sec:"F2",pos:"V",topic:"family"},{en:"birthday",de:"der Geburtstag",sec:"U6",pos:"N",topic:"celebrations"},{en:"to celebrate",de:"feiern",sec:"U6",pos:"V",topic:"celebrations"},{en:"costume",de:"das Kostüm",sec:"U6",pos:"N",topic:"celebrations"},{en:"ice rink",de:"die Eisbahn",sec:"U6",pos:"N",topic:"leisure"},{en:"bowling alley",de:"die Bowlingbahn",sec:"U6",pos:"N",topic:"leisure"},{en:"candle",de:"die Kerze",sec:"U6",pos:"N",topic:"celebrations"},{en:"wish",de:"der Wunsch",sec:"U6",pos:"N",topic:"feelings"},{en:"to make a wish",de:"sich etwas wünschen",sec:"U6",pos:"V",topic:"feelings"},{en:"date",de:"das Datum",sec:"U6",pos:"N",topic:"time"},{en:"January",de:"Januar",sec:"U6",pos:"N",topic:"time"},{en:"February",de:"Februar",sec:"U6",pos:"N",topic:"time"},{en:"March",de:"März",sec:"U6",pos:"N",topic:"time"},{en:"April",de:"April",sec:"U6",pos:"N",topic:"time"},{en:"May",de:"Mai",sec:"U6",pos:"N",topic:"time"},{en:"June",de:"Juni",sec:"U6",pos:"N",topic:"time"},{en:"July",de:"Juli",sec:"U6",pos:"N",topic:"time"},{en:"August",de:"August",sec:"U6",pos:"N",topic:"time"},{en:"September",de:"September",sec:"U6",pos:"N",topic:"time"},{en:"October",de:"Oktober",sec:"U6",pos:"N",topic:"time"},{en:"November",de:"November",sec:"U6",pos:"N",topic:"time"},{en:"December",de:"Dezember",sec:"U6",pos:"N",topic:"time"},{en:"spring",de:"der Frühling",sec:"U6",pos:"N",topic:"time"},{en:"summer",de:"der Sommer",sec:"U6",pos:"N",topic:"time"},{en:"autumn",de:"der Herbst",sec:"U6",pos:"N",topic:"time"},{en:"winter",de:"der Winter",sec:"U6",pos:"N",topic:"time"},{en:"to plan",de:"planen",sec:"U6",pos:"V",topic:"leisure"},{en:"sleepover",de:"die Übernachtung (bei Freunden)",sec:"U6",pos:"N",topic:"leisure"},{en:"holidays",de:"die Ferien",sec:"U6",pos:"N",topic:"time"},{en:"theme",de:"das Thema / das Motto",sec:"U6",pos:"N",topic:"language"},{en:"decorations",de:"die Dekoration",sec:"U6",pos:"N",topic:"celebrations"},{en:"to invite",de:"einladen",sec:"U6",pos:"V",topic:"celebrations"},{en:"to decorate",de:"dekorieren / verzieren",sec:"U6",pos:"V",topic:"celebrations"},{en:"ice cream",de:"das Eis / die Eiscreme",sec:"U6",pos:"N",topic:"food"},{en:"to clean",de:"säubern / reinigen",sec:"U6",pos:"V",topic:"home"},{en:"invitation",de:"die Einladung",sec:"U6",pos:"N",topic:"celebrations"},{en:"size",de:"die Größe",sec:"U6",pos:"N",topic:"shopping"},{en:"glove",de:"der Handschuh",sec:"U6",pos:"N",topic:"shopping"},{en:"to win",de:"gewinnen / siegen",sec:"U6",pos:"V",topic:"leisure"},{en:"to prepare",de:"vorbereiten / zubereiten",sec:"U6",pos:"V",topic:"food"},{en:"cream",de:"die Creme / die Sahne",sec:"U6",pos:"N",topic:"food"},{en:"to break",de:"brechen / zerbrechen",sec:"U6",pos:"V",topic:"home"},{en:"bowl",de:"die Schale / die Schüssel",sec:"U6",pos:"N",topic:"food"},{en:"fresh",de:"frisch",sec:"U6",pos:"ADJ",topic:"food"},{en:"jelly",de:"die Götterspeise / der Wackelpudding",sec:"U6",pos:"N",topic:"food"},{en:"custard",de:"die Vanillesoße",sec:"U6",pos:"N",topic:"food"},{en:"trifle",de:"das Trifle (englischer Nachtisch)",sec:"U6",pos:"N",topic:"food"},{en:"to go wrong",de:"schiefgehen",sec:"U6",pos:"V",topic:"language"},{en:"in the end",de:"schließlich / zum Schluss",sec:"U6",pos:"PHR",topic:"language"},{en:"to hurt",de:"verletzen / weh tun",sec:"U6",pos:"V",topic:"feelings"},{en:"bad luck",de:"das Pech",sec:"U6",pos:"N",topic:"feelings"},{en:"month",de:"der Monat",sec:"U6",pos:"N",topic:"time"},{en:"yesterday",de:"gestern",sec:"U6",pos:"N",topic:"time"},{en:"postcard",de:"die Postkarte",sec:"U6",pos:"N",topic:"celebrations"},{en:"barbecue",de:"der Grill / die Grillparty",sec:"U6",pos:"N",topic:"celebrations"},{en:"fireworks",de:"das Feuerwerk",sec:"U6",pos:"N",topic:"celebrations"},{en:"awesome",de:"super / spitze",sec:"U6",pos:"ADJ",topic:"feelings"},{en:"pancake",de:"der Pfannkuchen",sec:"U6",pos:"N",topic:"food"},{en:"Christmas",de:"Weihnachten",sec:"U6",pos:"N",topic:"celebrations"},{en:"Easter",de:"Ostern",sec:"U6",pos:"N",topic:"celebrations"},{en:"New Year's Eve",de:"Silvester",sec:"U6",pos:"N",topic:"celebrations"},{en:"midnight",de:"die Mitternacht",sec:"U6",pos:"N",topic:"time"},{en:"lonely",de:"einsam",sec:"U6",pos:"ADJ",topic:"feelings"},{en:"bored",de:"gelangweilt",sec:"U6",pos:"ADJ",topic:"feelings"},{en:"hungry",de:"hungrig",sec:"U6",pos:"ADJ",topic:"food"},{en:"to smile",de:"lächeln",sec:"U6",pos:"V",topic:"feelings"},{en:"to hurry",de:"eilen / sich beeilen",sec:"U6",pos:"V",topic:"language"},{en:"suddenly",de:"plötzlich / auf einmal",sec:"U6",pos:"ADJ",topic:"time"},{en:"to whisper",de:"flüstern",sec:"U6",pos:"V",topic:"language"},{en:"to count",de:"zählen",sec:"U6",pos:"V",topic:"time"},{en:"better",de:"besser / lieber",sec:"U6",pos:"ADJ",topic:"feelings"},{en:"locker",de:"das Schließfach",sec:"U6",pos:"N",topic:"school"},{en:"to trip",de:"stolpern",sec:"U6",pos:"V",topic:"language"},{en:"yummy",de:"lecker",sec:"U6",pos:"ADJ",topic:"food"},{en:"vacation",de:"die Ferien / der Urlaub",sec:"U6",pos:"N",topic:"time"},{en:"cookie",de:"der Keks",sec:"U6",pos:"N",topic:"food"},{en:"guy",de:"der Typ / die Leute",sec:"U6",pos:"N",topic:"language"},{en:"instead of",de:"statt / anstatt",sec:"U6",pos:"PREP",topic:"language"},{en:"ago",de:"vor (zeitlich)",sec:"U6",pos:"PREP",topic:"time"},{en:"to stay up",de:"aufbleiben",sec:"U6",pos:"V",topic:"time"},{en:"event",de:"das Ereignis / die Veranstaltung",sec:"AC3",pos:"N",topic:"celebrations"},{en:"tradition",de:"die Tradition",sec:"AC3",pos:"N",topic:"celebrations"},{en:"wedding",de:"die Hochzeit",sec:"AC3",pos:"N",topic:"celebrations"},{en:"bonfire",de:"das Lagerfeuer",sec:"AC3",pos:"N",topic:"celebrations"},{en:"role",de:"die Rolle",sec:"AC3",pos:"N",topic:"language"},{en:"background",de:"der Hintergrund",sec:"AC3",pos:"N",topic:"language"},{en:"colourful",de:"farbenfroh / bunt",sec:"AC3",pos:"ADJ",topic:"language"},{en:"serious",de:"ernsthaft / ernst",sec:"AC3",pos:"ADJ",topic:"feelings"},{en:"international",de:"international",sec:"AC3",pos:"ADJ",topic:"world"},{en:"national",de:"national / landesweit",sec:"AC3",pos:"ADJ",topic:"world"},{en:"religious",de:"religiös / gläubig",sec:"AC3",pos:"ADJ",topic:"world"},{en:"historical",de:"historisch / geschichtlich",sec:"AC3",pos:"ADJ",topic:"world"},{en:"royal",de:"königlich",sec:"AC3",pos:"ADJ",topic:"world"},{en:"Christian",de:"christlich",sec:"AC3",pos:"ADJ",topic:"world"},{en:"whole",de:"ganz",sec:"AC3",pos:"ADJ",topic:"language"},{en:"stadium",de:"das Stadion",sec:"F3",pos:"N",topic:"leisure"},{en:"state",de:"der Staat / der Bundesstaat",sec:"F3",pos:"N",topic:"world"},{en:"coast",de:"die Küste",sec:"F3",pos:"N",topic:"nature"},{en:"corn",de:"der Mais / das Getreide",sec:"F3",pos:"N",topic:"food"},{en:"wheat",de:"der Weizen",sec:"F3",pos:"N",topic:"food"},{en:"cotton",de:"die Baumwolle",sec:"F3",pos:"N",topic:"world"},{en:"oil",de:"das Öl",sec:"F3",pos:"N",topic:"world"},{en:"president",de:"der Präsident / die Präsidentin",sec:"F3",pos:"N",topic:"world"},{en:"monument",de:"das Monument / das Denkmal",sec:"F3",pos:"N",topic:"places"},{en:"moon",de:"der Mond",sec:"F3",pos:"N",topic:"nature"},{en:"space",de:"der Raum / der Weltraum",sec:"F3",pos:"N",topic:"world"},{en:"skyscraper",de:"der Wolkenkratzer",sec:"F3",pos:"N",topic:"places"},{en:"zoo",de:"der Zoo",sec:"F3",pos:"N",topic:"nature"},{en:"freedom",de:"die Freiheit",sec:"F3",pos:"N",topic:"world"},{en:"cow",de:"die Kuh",sec:"F3",pos:"N",topic:"nature"},{en:"polar bear",de:"der Eisbär",sec:"F3",pos:"N",topic:"nature"},{en:"alligator",de:"der Alligator",sec:"F3",pos:"N",topic:"nature"},{en:"fair",de:"die Messe / der Jahrmarkt",sec:"F3",pos:"N",topic:"leisure"},{en:"to mean",de:"bedeuten",sec:"F3",pos:"V",topic:"language"},{en:"to become",de:"werden",sec:"F3",pos:"V",topic:"language"},{en:"to grow",de:"anbauen / züchten",sec:"F3",pos:"V",topic:"nature"},{en:"to produce",de:"herstellen / produzieren",sec:"F3",pos:"V",topic:"world"},{en:"to enjoy",de:"genießen",sec:"F3",pos:"V",topic:"leisure"},{en:"area",de:"das Areal / das Gebiet",sec:"F3",pos:"N",topic:"places"},{en:"mile",de:"die Meile",sec:"F3",pos:"N",topic:"world"},{en:"dollar bill",de:"die Dollarnote",sec:"F3",pos:"N",topic:"world"}];
+
+const CREATIVE_DB = {"to go shopping":{gap:"On Saturdays, Mum and I _____ at the market.",img:"A woman and child walking through a busy market with bags in their hands.",example:"We go shopping every Saturday morning."},"expensive":{gap:"The new phone is too _____ — it costs 800 pounds!",img:"A price tag showing a very high number on a luxury item in a shop window.",example:"That jacket is expensive, so I won\'t buy it."},"cheap":{gap:"These apples are only 50 cents — they are really _____!",img:"A market stall with a big \'50p\' sign and lots of fruit piled up.",example:"I found a cheap T-shirt at the flea market."},"bottle":{gap:"She bought a _____ of orange juice at the shop.",img:"A single glass bottle of orange juice standing on a shop shelf.",example:"Can I have a bottle of water, please?"},"price":{gap:"What is the _____ of this blue jumper?",img:"A person looking at a label on a jumper with a question mark above their head.",example:"The price of the book is five pounds."},"present":{gap:"I bought a _____ for my mum\'s birthday.",img:"A wrapped gift box with a bow on top sitting on a table.",example:"She gave me a lovely present for Christmas."},"clothes":{gap:"He put all his _____ into the big bag.",img:"A pile of colourful T-shirts, jeans and jumpers folded on a bed.",example:"I need new clothes for the school trip."},"jewellery":{gap:"My grandma wears a lot of gold _____.",img:"A necklace, earrings and bracelet arranged on a velvet display board.",example:"She got a bracelet and a ring as jewellery."},"to sell":{gap:"They _____ old toys at the flea market every Sunday.",img:"A table at a flea market covered in toys with small price labels.",example:"He wants to sell his old bike."},"pound":{gap:"A chocolate bar costs one _____ in England.",img:"A shiny gold British pound coin lying on a wooden surface.",example:"The ticket costs five pounds fifty."},"euro":{gap:"In Germany, we pay with _____, not pounds.",img:"Several euro coins and a euro banknote spread out on a table.",example:"It costs three euros at the supermarket."},"cent":{gap:"That sweet only costs twenty _____.",img:"A few small copper coins next to a small sweet on a shop counter.",example:"I need fifty cents for the gumball machine."},"quality":{gap:"This bag is made of good _____ leather.",img:"A close-up of a well-stitched leather bag being inspected by a customer.",example:"The quality of the food at this restaurant is great."},"can":{gap:"He drank a _____ of cola after football practice.",img:"A red and white drinks can with a pull tab on top, on a table.",example:"I bought a can of beans at the shop."},"coke":{gap:"She ordered a burger and a _____ at the snack bar.",img:"A glass of dark fizzy drink with ice cubes and a straw.",example:"Can I have a coke, please?"},"packet":{gap:"Mum bought a _____ of crisps for the journey.",img:"A small sealed packet of crisps lying on a car seat.",example:"He ate a whole packet of biscuits!"},"bracelet":{gap:"She wore a silver _____ on her left wrist.",img:"A shiny silver bracelet on a girl\'s wrist.",example:"I got a gold bracelet as a birthday present."},"special offer":{gap:"The trainers are on _____ — only fifteen pounds this week!",img:"A shop window with a big red \'SPECIAL OFFER\' sign and shoes displayed.",example:"We bought three books because of the special offer."},"snack bar":{gap:"We stopped at the _____ to get a hot dog.",img:"A small outdoor food stall with a striped awning selling hot dogs and drinks.",example:"The snack bar at the swimming pool sells chips."},"penny":{gap:"I found a _____ on the floor and picked it up.",img:"A tiny copper coin lying on a pavement, heads side up.",example:"That sweet costs just one penny."},"sad":{gap:"She was _____ because she lost her favourite bracelet.",img:"A girl sitting on a bench with her head down and tears on her cheeks.",example:"He was sad when he couldn\'t find his cat."},"to earn":{gap:"I _____ five pounds by washing Dad\'s car.",img:"A boy washing a car with a sponge and a bucket, looking pleased.",example:"She earns pocket money by tidying her room."},"flea market":{gap:"We found an old lamp at the _____ for just two euros.",img:"Rows of tables outside covered in old books, toys and lamps with people browsing.",example:"Mum loves going to the flea market on Sundays."},"toy":{gap:"He sold his old _____ box at the school fair.",img:"A colourful box overflowing with toy cars, building blocks and a teddy bear.",example:"She got a new toy for her birthday."},"garage":{gap:"Dad keeps his tools in the _____.",img:"An open garage with a car inside and shelves of tools on the walls.",example:"We had a garage sale last weekend."},"to feel":{gap:"After the run, I _____ really tired.",img:"A boy slumped on a sofa looking exhausted after sport, sweat on his forehead.",example:"How do you feel today?"},"hopeful":{gap:"She was _____ that she would win the raffle.",img:"A girl holding a raffle ticket and crossing her fingers, smiling.",example:"I am hopeful that the weather will be good tomorrow."},"to ring":{gap:"The school bell _____ at half past eight.",img:"A large school bell mounted on a wall, vibrating with sound waves drawn around it.",example:"My phone rang during the lesson."},"full":{gap:"I can\'t eat any more — I\'m _____!",img:"A boy leaning back from a dinner table with a very large empty plate in front of him.",example:"The bag was full of books."},"to throw away":{gap:"Please _____ that empty bottle in the bin.",img:"A hand dropping a plastic bottle into a recycling bin.",example:"She threw away all her old magazines."},"coffee":{gap:"Mum always drinks a cup of _____ in the morning.",img:"A steaming white mug of dark coffee on a kitchen table with morning light.",example:"Dad made a coffee before work."},"T-shirt":{gap:"He wore a red _____ to the football match.",img:"A plain red T-shirt laid flat on a white surface.",example:"I bought a new T-shirt at the market."},"jeans":{gap:"She put on her favourite blue _____ and a white top.",img:"A pair of folded blue denim jeans on a shelf.",example:"These jeans are too small for me now."},"shirt":{gap:"He had to wear a white _____ for the school concert.",img:"A neatly ironed white button-up shirt on a hanger.",example:"Dad wears a shirt to work every day."},"pullover":{gap:"It was cold outside so she put on a warm _____.",img:"A cosy knitted jumper in green and orange stripes lying on a bed.",example:"I need a pullover — it\'s freezing!"},"dress":{gap:"She wore a yellow _____ to the birthday party.",img:"A yellow summer dress with flowers on it, hanging on a wardrobe door.",example:"Grandma made me a beautiful dress."},"telephone":{gap:"The _____ rang three times before Mum answered it.",img:"An old-fashioned red telephone on a hallway table, ringing.",example:"He left his telephone at school."},"juice":{gap:"She had a glass of orange _____ for breakfast.",img:"A tall glass of bright orange juice with a straw, next to a halved orange.",example:"Can I have some apple juice, please?"},"glass":{gap:"He drank a _____ of cold water after the run.",img:"A tall clear glass filled with water and ice cubes on a table.",example:"She dropped the glass and it broke."},"any":{gap:"Is there _____ milk left in the fridge?",img:"Someone opening a fridge and peering inside, checking the shelves.",example:"I don\'t have any money with me."},"must":{gap:"You _____ do your homework before watching TV.",img:"A boy sitting at a desk with books open, TV visible but switched off behind him.",example:"We must be at school by eight o\'clock."},"to be worth":{gap:"This old coin might _____ a lot of money.",img:"An old coin under a magnifying glass, being examined carefully.",example:"Is this jumper worth fifteen pounds?"},"about":{gap:"There were _____ twenty people at the market.",img:"A bird\'s-eye view of a market with roughly twenty people visible between the stalls.",example:"It costs about five euros."},"stuff":{gap:"He put all his _____ in the big box.",img:"A cardboard box overflowing with random objects — books, toys, a cup.",example:"There is a lot of stuff in the garage."},"everything":{gap:"She sold _____ at the flea market and made fifty pounds.",img:"An empty table at a flea market with a sold sign and a happy girl behind it.",example:"I ate everything on my plate."},"to ask for":{gap:"He _____ a new bike for his birthday.",img:"A boy pointing at a bike in a shop window while talking to his mum.",example:"She asked for help with her homework."},"bargain":{gap:"Five pounds for those trainers? What a _____!",img:"A pair of trainers with a huge discount sticker on them in a shop.",example:"I found a real bargain at the flea market."},"to spend":{gap:"He _____ all his pocket money on sweets.",img:"A boy emptying his piggy bank coins onto a shop counter with sweets behind the glass.",example:"How much did you spend at the market?"},"a little":{gap:"Can I have _____ more juice, please?",img:"A child holding out a small glass, asking politely for a tiny bit more drink.",example:"I only need a little help."},"anything":{gap:"Did you buy _____ at the market today?",img:"Someone coming home with empty hands being asked a question at the door.",example:"Is there anything I can do to help?"},"nothing":{gap:"She looked in her purse but found _____.",img:"An open empty purse with no coins or notes inside.",example:"There is nothing in the fridge."},"somebody":{gap:"_____ left their bag in the classroom.",img:"A school bag sitting alone on a chair in an empty classroom.",example:"Somebody knocked on the door."},"nobody":{gap:"_____ wanted to go out in the rain.",img:"An empty playground in the pouring rain with all the doors shut.",example:"Nobody knows the answer."},"guitar":{gap:"She plays the _____ in the school band.",img:"A brown acoustic guitar leaning against an amplifier on a small stage.",example:"He got a guitar for his birthday."},"a couple of":{gap:"I only need _____ minutes to finish this.",img:"A clock showing just a few minutes passing, with someone almost done with a task.",example:"Can I borrow a couple of pens?"},"answering machine":{gap:"Nobody was home so I left a message on the _____.",img:"A small device with a flashing red light next to a telephone on a table.",example:"The answering machine had three messages."},"message":{gap:"Mum left a _____ on the kitchen table for me.",img:"A yellow sticky note on a kitchen table with writing on it.",example:"Did you get my message?"},"to call":{gap:"I\'ll _____ you when I get home.",img:"A person holding a phone to their ear and waving goodbye at the same time.",example:"She called her friend after school."},"to leave a message":{gap:"He wasn\'t there, so I had to _____ on the machine.",img:"Someone talking into a phone with the answering machine light on.",example:"Please leave a message after the beep."},"phone call":{gap:"I got a _____ from Gran this morning.",img:"A mobile phone screen showing an incoming call from \'Gran\'.",example:"She missed an important phone call."},"to answer the phone":{gap:"Can you _____ — my hands are full!",img:"A ringing phone on a table while someone stands nearby with both hands carrying shopping bags.",example:"He answered the phone straight away."},"to put through":{gap:"The secretary said she would _____ me to the headteacher.",img:"A receptionist at a desk pressing a button on a telephone switchboard.",example:"Hold on, I\'ll put you through."},"dictionary":{gap:"Look up the word in your _____.",img:"A thick book with \'Dictionary\' on the cover, open to a random page.",example:"I used a dictionary to find the meaning."},"buyer":{gap:"The _____ paid twenty pounds for the old lamp.",img:"A person handing over money at a market stall to the seller.",example:"We found a buyer for our old sofa."},"seller":{gap:"The _____ at the market was very friendly.",img:"A smiling person behind a market stall full of fruit and vegetables.",example:"The seller gave us a discount."},"goal":{gap:"He scored the winning _____ in the last minute.",img:"A football flying into the back of a net with a goalkeeper diving the wrong way.",example:"My goal is to learn ten new words every day."},"lucky":{gap:"She was _____ to find a five-pound note on the street.",img:"A girl bending down to pick up a green banknote from the pavement, smiling.",example:"You are so lucky to have a dog!"},"raffle":{gap:"We bought five tickets for the school _____.",img:"A box full of folded paper tickets, with someone picking one out at a school fair.",example:"She won a cake in the raffle."},"prize":{gap:"The first _____ was a brand new bicycle.",img:"A shiny red bicycle with a first-place ribbon tied to the handlebars.",example:"He won the prize for best project."},"ticket":{gap:"I bought a raffle _____ for fifty pence.",img:"A small paper ticket with a number on it being handed over a counter.",example:"She lost her bus ticket."},"to hope":{gap:"I _____ it doesn\'t rain on Saturday.",img:"A child looking out of a window at grey clouds with fingers crossed.",example:"We hope to visit London next year."},"still":{gap:"He has _____ not finished his homework.",img:"A clock showing late evening and a boy still sitting at his desk with books open.",example:"Are you still hungry?"},"broken":{gap:"The old clock was _____ and nobody could fix it.",img:"A clock with a cracked face and hands pointing the wrong way.",example:"My bike is broken — the wheel fell off."},"coin":{gap:"She found an old _____ in the garden.",img:"A muddy old coin being dug up from the earth in a garden.",example:"He put the coin in his piggy bank."},"half":{gap:"She ate _____ of the pizza and saved the rest.",img:"A round pizza with exactly one half eaten and one half remaining on a plate.",example:"It is half past three."},"each":{gap:"The apples cost one pound _____.",img:"A market stall with individual apples displayed, each with a \'£1\' label.",example:"Each pupil got a worksheet."},"piece":{gap:"Can I have a _____ of cake, please?",img:"A slice of chocolate cake on a plate, being lifted out of a whole cake.",example:"He took a piece of paper from the printer."},"rubbish":{gap:"Please put your _____ in the bin.",img:"A pile of crisp packets and empty cups next to an overflowing bin.",example:"The park was covered in rubbish after the fair."},"horrified":{gap:"She was _____ when she saw the mess in the kitchen.",img:"A girl standing in a kitchen doorway with her mouth wide open and hands on cheeks.",example:"He was horrified by the price of the jacket."},"head":{gap:"She shook her _____ and said no.",img:"A girl shaking her head slowly from side to side.",example:"He bumped his head on the low door."},"to pull":{gap:"He had to _____ the heavy box across the floor.",img:"A boy straining to drag a large cardboard box along a wooden floor.",example:"Pull the door, don\'t push it."},"disappointed":{gap:"She was _____ when she didn\'t win the prize.",img:"A girl with drooping shoulders looking at an empty hand after the raffle draw.",example:"He was disappointed with his test result."},"excited":{gap:"The children were _____ about the school trip.",img:"Three children jumping up and down with big smiles and their arms in the air.",example:"I am so excited — it\'s my birthday tomorrow!"},"thankful":{gap:"She was _____ for all the help she got.",img:"A girl hugging someone tightly with a warm smile on her face.",example:"We are thankful for the food on the table."},"helpful":{gap:"The shop assistant was very _____ and found the right size.",img:"A shop assistant kneeling down to help a customer try on a shoe.",example:"It is helpful to write new words down."},"helpless":{gap:"He felt _____ when the computer broke during his presentation.",img:"A boy sitting in front of a blank screen with his hands raised in the air.",example:"The puppy looked helpless in the big box."},"charity":{gap:"She gave her old clothes to _____.",img:"A bag of folded clothes being handed to a person at a charity donation point.",example:"The school raised money for charity."},"community centre":{gap:"The flea market is held at the _____ every month.",img:"A large building with a sign reading \'Community Centre\' and people going in and out.",example:"The after-school club meets at the community centre."},"to organise":{gap:"She helped to _____ the school fair.",img:"A girl with a clipboard and pen ticking off items on a list at a busy school fair.",example:"Can you organise the books on the shelf?"},"year":{gap:"Next _____, I\'ll be in Year 6.",img:"A calendar page turning from one year to the next.",example:"She has studied English for one year."},"to clear out":{gap:"We decided to _____ the garage before the sale.",img:"A family carrying old boxes and bags out of a cluttered garage.",example:"He cleared out his room and found five old toys."},"to make money":{gap:"They _____ by selling lemonade at the door.",img:"Two children behind a small lemonade stand with a jar of coins on the table.",example:"She wants to make money to buy a new bike."},"charity shop":{gap:"I bought this jumper at the _____ for two pounds.",img:"A row of second-hand clothes on a rail inside a brightly lit charity shop.",example:"The charity shop on our street sells books."},"family":{gap:"My _____ has four people: Mum, Dad, my brother and me.",img:"Four people — two adults and two children — sitting together on a sofa, smiling.",example:"Her family lives in Munich."},"to live":{gap:"They _____ in a big house near the park.",img:"A large house with a green garden, a family waving from the front door.",example:"We live on the third floor."},"flat":{gap:"We live in a _____ on the second floor.",img:"A block of flats with one window lit up and a family visible inside.",example:"Their flat has three rooms."},"house":{gap:"The _____ has a big garden and a red door.",img:"A red-brick house with a bright red front door and flower pots outside.",example:"My grandparents live in an old house."},"door":{gap:"Please close the _____ — it\'s cold!",img:"An open front door with cold wind blowing leaves inside and a person reaching for the handle.",example:"He knocked on the door three times."},"TV":{gap:"They watched a film on the _____ after dinner.",img:"A large flat-screen TV on a living room wall showing a colourful cartoon.",example:"The TV in the living room is very big."},"chair":{gap:"He sat on the _____ and read his book.",img:"A wooden chair with a cushion at a desk, with a book open on it.",example:"Pull up a chair and sit down."},"table":{gap:"We eat dinner at the kitchen _____.",img:"A round kitchen table set for dinner with plates, glasses and cutlery.",example:"Put your bag on the table."},"shower":{gap:"She has a _____ every morning before school.",img:"Water running from a shower head in a steam-filled bathroom.",example:"The shower in our bathroom is broken."},"bath":{gap:"The little boy had a _____ before bedtime.",img:"A small child in a bathtub full of bubbles, playing with a toy duck.",example:"I prefer a bath to a shower."},"toilet":{gap:"The _____ is next to the bathroom.",img:"A white toilet in a small tiled room with the door slightly open.",example:"Where is the toilet, please?"},"bed":{gap:"She jumped on the _____ and fell asleep quickly.",img:"A cosy bed with a duvet and pillows in a dimly lit bedroom.",example:"I go to bed at nine o\'clock."},"clock":{gap:"The _____ on the wall says half past seven.",img:"A round wall clock with the hands pointing to seven-thirty.",example:"The alarm clock woke me up at six."},"wardrobe":{gap:"She put her dresses in the _____.",img:"An open wooden wardrobe full of colourful clothes on hangers.",example:"His wardrobe is always a mess."},"cupboard":{gap:"The plates are in the kitchen _____.",img:"An open kitchen cupboard with neat stacks of plates and mugs.",example:"Put the biscuits in the cupboard."},"cooker":{gap:"Mum is making soup on the _____.",img:"A gas cooker with a pot on the hob, steam rising from it.",example:"The new cooker has four rings."},"living room":{gap:"The whole family sat in the _____ and watched a film.",img:"A cosy room with a sofa, TV, bookshelf and a lamp, all looking lived-in.",example:"Our living room has a big sofa."},"bedroom":{gap:"Her _____ walls are painted light blue.",img:"A tidy bedroom with light blue walls, a desk, bookshelf and a single bed.",example:"I do my homework in my bedroom."},"kitchen":{gap:"Dad is cooking pasta in the _____.",img:"A man standing at a cooker in a bright kitchen, stirring a pot.",example:"The kitchen smells of fresh bread."},"bathroom":{gap:"The _____ has a shower and a bathtub.",img:"A white tiled bathroom with a shower cubicle and a bathtub side by side.",example:"I brush my teeth in the bathroom."},"sister":{gap:"My _____ is two years older than me.",img:"Two girls sitting on a sofa together, one older and one younger, both smiling.",example:"His sister plays the piano very well."},"brother":{gap:"My _____ and I share a bedroom.",img:"Two boys in a bedroom, one on the top bunk and one on the bottom bunk.",example:"Her brother is in Year 7."},"father":{gap:"My _____ works as a doctor.",img:"A man in a suit at a desk, working on a computer.",example:"Her father makes great pancakes."},"mother":{gap:"My _____ reads me a story every night.",img:"A woman sitting on the edge of a child\'s bed, holding an open book.",example:"His mother is a teacher."},"cousin":{gap:"My _____ lives in Hamburg and visits us at Christmas.",img:"Two children hugging each other at a front door, both looking happy.",example:"I have three cousins on my dad\'s side."},"uncle":{gap:"My _____ tells the funniest jokes at family dinners.",img:"A man at a dinner table making everyone laugh with a big smile.",example:"Uncle Tom brought us presents from London."},"aunt":{gap:"My _____ bakes the best chocolate cake.",img:"A woman in an apron taking a chocolate cake out of the oven.",example:"We visit our aunt every summer."},"grandad":{gap:"My _____ teaches me how to play chess.",img:"An elderly man and a child sitting across a chessboard, both concentrating.",example:"Grandad fixed my bike yesterday."},"grandma":{gap:"My _____ always has sweets in her handbag.",img:"An elderly woman opening her handbag and taking out a wrapped sweet.",example:"Grandma made soup for everyone."},"garden":{gap:"We play football in the _____ after school.",img:"Two children kicking a ball in a green garden with a goal made of jumpers.",example:"Mum grows tomatoes in the garden."},"car":{gap:"Dad washes the _____ every Saturday morning.",img:"A man scrubbing a shiny car with a sponge and bucket outside a house.",example:"The car is parked in the garage."},"fridge":{gap:"Put the milk back in the _____.",img:"An open fridge full of food with a hand reaching in to put milk back.",example:"There is nothing in the fridge."},"wall":{gap:"She painted a rainbow on her bedroom _____.",img:"A child standing on a stool painting a colourful rainbow on a white wall.",example:"He hung his poster on the wall."},"loft":{gap:"The old photos are stored in the _____.",img:"A hatch in a ceiling with a ladder leading up to a dark, dusty loft space.",example:"We keep our Christmas decorations in the loft."},"rule":{gap:"The most important school _____ is: be on time.",img:"A school noticeboard with a list of rules, \'BE ON TIME\' highlighted.",example:"The rule says no running in the corridor."},"lunch":{gap:"We eat _____ in the school cafeteria at twelve o\'clock.",img:"Children sitting at long tables in a school cafeteria with trays of food.",example:"I had pasta for lunch today."},"money":{gap:"She saved her _____ to buy a new book.",img:"A piggy bank being filled with coins, coins stacked beside it.",example:"He spent all his money on comics."},"to pay":{gap:"He had to _____ two pounds for the sandwich.",img:"A child handing coins to a cashier at a school cafeteria counter.",example:"Can I pay by card?"},"to buy":{gap:"She wants to _____ a new pencil case.",img:"A girl in a shop holding up two pencil cases, deciding which one to get.",example:"I bought three books at the fair."},"shop":{gap:"There is a small _____ near the school that sells sandwiches.",img:"A small corner shop with a sandwich board outside and a child walking in.",example:"We went to the shop after school."},"pen":{gap:"Can I borrow your _____ — mine has run out.",img:"A hand writing in a notebook with a fountain pen.",example:"She lost her pen somewhere in the classroom."},"pencil":{gap:"Draw the sketch lightly in _____ first.",img:"A wooden pencil with an eraser on the end, lying next to a sketchbook.",example:"His pencil is always broken."},"pencil case":{gap:"She keeps all her pens and rulers in her _____.",img:"An open pencil case spilling out coloured pencils, a ruler and an eraser.",example:"I left my pencil case at home."},"exercise book":{gap:"Write the answers in your _____.",img:"An open lined exercise book with neat handwriting and a red tick at the top.",example:"She filled three exercise books this term."},"ruler":{gap:"Use a _____ to draw a straight line.",img:"A transparent plastic ruler placed on a page with a pencil drawing a line along it.",example:"I need a ruler for Maths."},"rubber":{gap:"He used a _____ to correct his mistake.",img:"A pink eraser rubbing out pencil marks on a piece of paper.",example:"Can I borrow your rubber?"},"classroom":{gap:"There are thirty pupils in our _____.",img:"A bright classroom with desks in rows, a whiteboard at the front and posters on the walls.",example:"The classroom smells of paint."},"classmate":{gap:"My _____ helped me with the Maths problem.",img:"Two children sitting at desks next to each other, one pointing at the other\'s book.",example:"She is my best classmate."},"homework":{gap:"I do my _____ at the kitchen table.",img:"A child sitting at a kitchen table with a textbook and exercise book open.",example:"Have you done your homework yet?"},"teacher":{gap:"Our English _____ always starts the lesson with a song.",img:"A teacher at the front of a class smiling and pointing to words on a whiteboard.",example:"The teacher gave us a test today."},"lesson":{gap:"The English _____ lasts forty-five minutes.",img:"A clock on a classroom wall with 45 minutes highlighted.",example:"My favourite lesson is Art."},"question":{gap:"He raised his hand to ask a _____.",img:"A boy with his hand up high in class, looking at the teacher.",example:"She answered every question correctly."},"student":{gap:"Every _____ in the class got a certificate.",img:"Children one by one walking to the front to receive a certificate from the teacher.",example:"He is the best student in the year."},"board":{gap:"The teacher wrote the date on the _____.",img:"A whiteboard with \'Monday 23rd June\' written in large letters.",example:"Copy the sentences from the board."},"Maths":{gap:"We have _____ first thing every Monday morning.",img:"A page of a Maths exercise book covered in sums and equations.",example:"I find Maths really hard."},"PE":{gap:"In _____ today, we played basketball.",img:"Children in sports kits playing basketball in a school gymnasium.",example:"PE is my favourite subject."},"to forget":{gap:"Don\'t _____ to bring your PE kit tomorrow.",img:"A child leaving the house and looking back, having left a sports bag by the door.",example:"I always forget my lunch on Mondays."},"to learn":{gap:"We are going to _____ twenty new words this week.",img:"A notebook open with vocabulary written out in two columns.",example:"She learns ten words every evening."},"to work":{gap:"We had to _____ in pairs for the project.",img:"Two pupils sitting together at a table, writing on the same sheet of paper.",example:"He works very hard in every lesson."},"joke":{gap:"He told a funny _____ and everyone laughed.",img:"A boy at the front of a class making everyone laugh with a big grin.",example:"She knows lots of jokes."},"week":{gap:"There are five school days in a _____.",img:"A calendar with Monday to Friday highlighted in one row.",example:"I go swimming once a week."},"Monday":{gap:"School starts again on _____ after the weekend.",img:"A weekly planner with \'Monday\' at the top, highlighted in blue.",example:"We always have PE on Monday."},"Tuesday":{gap:"She has a piano lesson every _____.",img:"A weekly planner with \'Tuesday\' at the top.",example:"On Tuesday we have double Maths."},"Wednesday":{gap:"The school trip is on _____.",img:"A weekly planner with \'Wednesday\' highlighted and a small bus icon next to it.",example:"Wednesday is my favourite day at school."},"Thursday":{gap:"We get our test results back on _____.",img:"A weekly planner with \'Thursday\' highlighted and a small paper with a tick on it.",example:"I have football training on Thursdays."},"Friday":{gap:"Everyone is happy on _____ because the weekend starts.",img:"Children rushing out of school on a sunny afternoon, smiling and waving.",example:"We finish early on Friday."},"Saturday":{gap:"We go to the market every _____.",img:"A busy outdoor market on a bright morning, full of people shopping.",example:"On Saturday I sleep until nine."},"Sunday":{gap:"We visit Grandma for lunch every _____.",img:"A family sitting around a big dinner table for a Sunday roast.",example:"Sunday is a day of rest."},"morning":{gap:"She has a shower every _____ before school.",img:"Bright sunlight coming through curtains with an alarm clock showing seven o\'clock.",example:"I eat toast every morning."},"afternoon":{gap:"We play outside in the _____ after lunch.",img:"Two children playing in a garden in warm afternoon sunshine.",example:"She does her homework in the afternoon."},"evening":{gap:"In the _____, we watch TV together as a family.",img:"A family on a sofa watching TV in a dimly lit living room.",example:"He reads every evening before bed."},"to sleep":{gap:"The baby started to _____ after ten minutes.",img:"A small child fast asleep in a cot with a night light glowing softly.",example:"I sleep for eight hours every night."},"to come":{gap:"Can you _____ to my birthday party on Saturday?",img:"A child at a door holding an invitation card, looking hopeful.",example:"She comes home at four o\'clock."},"dinner":{gap:"We eat _____ at six o\'clock every evening.",img:"A family sitting around a table with plates of food, all eating together.",example:"What\'s for dinner tonight?"},"never":{gap:"He _____ forgets to do his homework.",img:"A boy at a desk with a big tick on every homework page — a perfect record.",example:"She never eats meat."},"often":{gap:"How _____ do you go to the swimming pool?",img:"A child in swimming goggles at the edge of a pool, about to jump in.",example:"We often go cycling at the weekend."},"sometimes":{gap:"We _____ have pizza on Friday nights.",img:"A family occasionally eating pizza — shown by a question mark above the pizza box.",example:"She sometimes forgets her lunch."},"usually":{gap:"I _____ walk to school but today Dad drove me.",img:"A boy walking to school most days, but one day in a car.",example:"He usually gets up at seven."},"tired":{gap:"After the football match, he was really _____.",img:"A boy slumped on a bench after a football match, eyes half closed.",example:"I am tired — I went to bed very late."},"tomorrow":{gap:"Don\'t forget — the test is _____!",img:"A calendar with today circled and an arrow pointing to tomorrow with \'TEST!\' written.",example:"I will do my homework tomorrow."},"pet":{gap:"She has a _____ — a small orange cat called Leo.",img:"A small orange cat curled up on a sofa looking content.",example:"Do you have a pet at home?"},"neighbour":{gap:"Our _____ always waters our plants when we are on holiday.",img:"A woman watering plants in the garden next door, waving over the fence.",example:"The neighbours are very friendly."},"mistake":{gap:"The teacher circled every _____ in red pen.",img:"An exercise book page with several red circles around wrong answers.",example:"Don\'t worry — everyone makes mistakes."},"face":{gap:"He had a big smile on his _____ when he got the present.",img:"A close-up of a child\'s face with a huge grin.",example:"Wash your face before breakfast."},"hand":{gap:"Raise your _____ if you know the answer.",img:"Several children with their hands raised in a classroom.",example:"He hurt his hand playing football."},"shoe":{gap:"She couldn\'t find her left _____ anywhere.",img:"A single shoe in a hallway with the matching one missing.",example:"These shoes are too small for me."},"ship":{gap:"The big _____ sailed slowly into the harbour.",img:"A large white cruise ship gliding into a harbour with seagulls flying around it.",example:"They crossed the ocean on a ship."},"free":{gap:"Entry to the museum is _____ on Sundays.",img:"A museum entrance with a big sign reading \'FREE ENTRY TODAY\'.",example:"Is the swimming pool free for children?"},"free time":{gap:"In my _____, I like to draw and listen to music.",img:"A child at home after school, drawing at a desk with headphones on.",example:"What do you do in your free time?"},"weather":{gap:"The _____ was so bad that we stayed inside.",img:"Heavy rain and grey clouds outside a window, with a child looking out sadly.",example:"What is the weather like today?"},"storm":{gap:"A big _____ hit the coast during the night.",img:"Dark clouds, lightning and huge waves crashing on a rocky coast.",example:"The storm knocked a tree down in our garden."},"wave":{gap:"The surfer rode a huge _____ all the way to the beach.",img:"A big curling ocean wave with a tiny surfer on it.",example:"The waves were too big for swimming."},"dangerous":{gap:"Swimming in the river alone is very _____.",img:"A warning sign by a river with a red cross and a swimmer on it.",example:"The road is dangerous without a crossing."},"brave":{gap:"The _____ girl jumped into the cold water to help.",img:"A girl diving into a river to rescue a floating toy — fearless expression.",example:"He was brave enough to climb to the top."},"to swim":{gap:"She can _____ two lengths of the pool without stopping.",img:"A child in goggles doing freestyle stroke in a blue swimming pool.",example:"I swim every Tuesday at the sports centre."},"to jump":{gap:"He _____ off the diving board into the water.",img:"A child in the air above a swimming pool, just after jumping off a diving board.",example:"She jumped over the puddle."},"to save":{gap:"The lifeguard managed to _____ the swimmer.",img:"A lifeguard in red pulling someone safely to the edge of a pool.",example:"He saved enough money to buy the bike."},"exciting":{gap:"The rollercoaster was the most _____ thing I\'ve ever done.",img:"People screaming with delight on a fast rollercoaster loop.",example:"The school trip to London was really exciting."},"together":{gap:"The whole family went to the beach _____.",img:"A family of four walking along a beach, all holding hands.",example:"Let\'s do the project together."},"bus":{gap:"We caught the _____ to the swimming pool.",img:"A red double-decker bus stopping at a bus stop with children getting on.",example:"The bus was five minutes late."},"horse":{gap:"She rode the brown _____ around the field.",img:"A girl in riding gear sitting on a brown horse in a green field.",example:"He feeds the horses every morning."},"market":{gap:"Dad buys fresh vegetables at the _____ every Saturday.",img:"A colourful outdoor market with stalls of fruit and vegetables.",example:"The Christmas market opens in December."},"to stay":{gap:"Can you _____ a bit longer? The film hasn\'t finished.",img:"A child pulling on a parent\'s sleeve, pointing at an unfinished film on TV.",example:"We stayed at a hotel near the sea."},"birthday":{gap:"She got twelve presents for her _____ today.",img:"A child at a table covered in wrapped presents with balloons around them.",example:"Happy birthday! How old are you today?"},"candle":{gap:"He blew out all ten _____ on the cake.",img:"A birthday cake with ten lit candles, a child leaning forward to blow them out.",example:"The candles on the cake were pink and white."},"wish":{gap:"Close your eyes and make a _____.",img:"A child squeezing their eyes shut over a birthday cake, thinking hard.",example:"My birthday wish came true."},"to celebrate":{gap:"We are going to _____ her birthday at the bowling alley.",img:"A group of children in party hats at a bowling alley with balloons.",example:"How do you celebrate New Year\'s Eve?"},"January":{gap:"School starts again in _____ after the Christmas holidays.",img:"A January page of a calendar with snow outside the window.",example:"My birthday is in January."},"summer":{gap:"In _____, we go to the beach every week.",img:"A sunny beach with people swimming and building sandcastles.",example:"Summer is my favourite season."},"winter":{gap:"In _____, we drink hot chocolate and go sledging.",img:"Children sledging down a snow-covered hill on a bright winter day.",example:"Winter in Bavaria is very cold."},"spring":{gap:"In _____, the flowers start to bloom.",img:"A park in spring with colourful flowers blooming and birds in the trees.",example:"Spring is my favourite season."},"autumn":{gap:"In _____, the leaves turn red and orange.",img:"A tree with red, orange and yellow leaves falling onto a path.",example:"We go back to school in autumn."},"holidays":{gap:"The summer _____ last six weeks in Bavaria.",img:"A sunny beach with children playing, a calendar showing six weeks circled.",example:"I love the Easter holidays."},"month":{gap:"December is the last _____ of the year.",img:"A calendar open to December with Christmas decorations around it.",example:"We visit Grandma once a month."},"yesterday":{gap:"I forgot my PE kit _____ and the teacher was not happy.",img:"A child looking embarrassed in PE clothes that are too small — wrong kit.",example:"Yesterday was my birthday."},"Christmas":{gap:"We open our presents on _____ morning.",img:"Children in pyjamas rushing downstairs to a Christmas tree covered in presents.",example:"Christmas is on the 25th of December."},"Easter":{gap:"We hunt for chocolate eggs at _____.",img:"Children running around a garden finding colourful Easter eggs hidden in the grass.",example:"At Easter, we visit our grandparents."},"New Year's Eve":{gap:"We watch fireworks at midnight on _____.",img:"Colourful fireworks exploding over a city skyline at midnight.",example:"On New Year\'s Eve, we stay up until midnight."},"fireworks":{gap:"The _____ were so loud that the dog hid under the bed.",img:"Colourful fireworks bursting in a night sky over a crowd of people.",example:"We watched the fireworks from the garden."},"invitation":{gap:"She sent out _____ for her birthday party.",img:"A stack of colourful envelopes addressed to different friends.",example:"He got an invitation to the school disco."},"to invite":{gap:"She decided to _____ all her classmates to the party.",img:"A girl handing a card to each classmate at school.",example:"Can I invite my friend to dinner?"},"awesome":{gap:"The concert was absolutely _____!",img:"A crowd at an outdoor concert with their hands up, light show in the background.",example:"That goal was awesome!"},"barbecue":{gap:"Dad lit the _____ in the garden for the party.",img:"A man in an apron standing over a smoking barbecue grill in a sunny garden.",example:"We had a barbecue on the last day of school."},"midnight":{gap:"The party went on until _____.",img:"A clock on a wall showing exactly twelve o\'clock at night.",example:"Cinderella had to leave by midnight."},"lonely":{gap:"He felt _____ at the party because he didn\'t know anyone.",img:"A boy sitting alone in the corner of a room while others talk and laugh around him.",example:"She was lonely when her best friend moved away."},"hungry":{gap:"After the long walk, we were all very _____.",img:"Four children walking in a park, all with hands on stomachs, looking at a food stand ahead.",example:"I am hungry — is dinner ready?"},"bored":{gap:"She was _____ because there was nothing to do.",img:"A girl lying on her back on the sofa staring at the ceiling.",example:"He gets bored very quickly."},"better":{gap:"She felt much _____ after a good night\'s sleep.",img:"A girl waking up in bed stretching her arms with a smile on her face.",example:"Practice makes you better."},"black":{gap:"The cat is completely _____ with yellow eyes.",img:"A black cat with bright yellow eyes sitting on a fence at night.",example:"He always wears black."},"blue":{gap:"The sky is bright _____ today — not a cloud in sight.",img:"A wide clear blue sky above a field of green grass.",example:"She has blue eyes."},"red":{gap:"She wore a _____ dress to the party.",img:"A bright red dress hanging on a clothes rail.",example:"The traffic light turned red."},"green":{gap:"The frog jumped into the _____ pond.",img:"A bright green frog sitting beside a lily-pad-covered pond.",example:"The garden is very green in spring."},"yellow":{gap:"The school bus is painted _____.",img:"A bright yellow school bus parked outside a school.",example:"Sunflowers are yellow."},"white":{gap:"It snowed overnight and everything was _____.",img:"A garden completely covered in white snow on a winter morning.",example:"She painted the wall white."},"school":{gap:"I walk to _____ every morning with my neighbour.",img:"Two children with backpacks walking along a path towards a school building.",example:"School starts at eight o\'clock."},"animal":{gap:"A dog is my favourite _____.",img:"A collection of animals — dog, cat, rabbit, horse — looking at the viewer.",example:"What is your favourite animal?"},"colour":{gap:"What is your favourite _____?",img:"A rainbow of paint splashes arranged in a circle.",example:"Blue is my favourite colour."},"number":{gap:"Write down your phone _____ on this piece of paper.",img:"A piece of paper with a phone number written on it in large digits.",example:"My lucky number is seven."},"one":{gap:"There is _____ biscuit left in the tin.",img:"A cookie tin with exactly one biscuit left inside.",example:"One plus one is two."},"two":{gap:"She has _____ sisters.",img:"Three girls together — one is clearly the eldest, with two younger sisters.",example:"I need two more pencils."},"ten":{gap:"He counted to _____ before opening his eyes.",img:"A child covering their eyes and counting on fingers, one through ten.",example:"There are ten pupils in the group."},"train":{gap:"We took the _____ to London — it was very fast.",img:"A sleek red train pulling into a station platform with passengers waiting.",example:"The train leaves at half past seven."},"window":{gap:"She looked out of the _____ and saw the mountains.",img:"A view from inside a train carriage, looking out at mountains through the glass.",example:"Please open the window — it\'s hot."},"woman":{gap:"A _____ in a red coat helped me find the way.",img:"A smiling woman in a red coat giving directions on a busy street.",example:"The woman at the information desk was helpful."},"man":{gap:"A _____ with a big umbrella stood at the bus stop.",img:"A man in a suit holding a large umbrella at a bus stop in the rain.",example:"The man behind the counter spoke English."},"to visit":{gap:"We are going to _____ the castle on Saturday.",img:"A family approaching a large stone castle with a drawbridge.",example:"I would love to visit New York one day."},"important":{gap:"It is _____ to drink water when it is hot.",img:"A child on a hot sunny day being handed a water bottle by an adult.",example:"Being on time is very important."},"beach":{gap:"We built sandcastles on the _____ all afternoon.",img:"Children building sandcastles on a sandy beach with the sea in the background.",example:"The beach was packed with tourists."},"sea":{gap:"You can see the _____ from our hotel window.",img:"A hotel window with a view of a sparkling blue sea.",example:"The sea was too cold for swimming."},"mountain":{gap:"They hiked to the top of the _____ before lunch.",img:"Two hikers on a steep rocky mountain path with a stunning view behind them.",example:"The mountains here are covered in snow."},"forest":{gap:"The _____ was full of tall oak trees and deer.",img:"Tall trees in a misty forest with sunlight filtering through the branches.",example:"We went for a walk in the forest."},"island":{gap:"The small _____ could only be reached by boat.",img:"A tiny green island surrounded by turquoise water, accessible only by a small boat.",example:"Great Britain is an island."},"castle":{gap:"The old _____ on the hill can be seen from miles away.",img:"A tall stone castle on a hilltop surrounded by green fields.",example:"We visited a Norman castle on the trip."},"museum":{gap:"The natural history _____ has a real dinosaur skeleton.",img:"A huge dinosaur skeleton on display in the centre of a grand museum hall.",example:"We spent three hours in the museum."},"city":{gap:"London is the biggest _____ in the United Kingdom.",img:"A wide skyline view of London with the Thames, Tower Bridge and skyscrapers.",example:"Do you prefer living in a city or the countryside?"},"village":{gap:"The tiny _____ had only one shop and a church.",img:"A quaint English village with thatched cottages, a church and a village green.",example:"Grandma lives in a quiet village."},"church":{gap:"The old _____ in the village is five hundred years old.",img:"A stone church with a tall spire in a green English village.",example:"We walked past the church on the way to school."},"river":{gap:"They kayaked down the _____ for two hours.",img:"Two people in a kayak paddling down a calm river surrounded by trees.",example:"The river flooded the fields last winter."},"lake":{gap:"We swam in the _____ on the hottest day of the year.",img:"Children splashing in a clear mountain lake on a sunny summer day.",example:"There is a beautiful lake near our campsite."},"famous":{gap:"Big Ben is one of the most _____ clocks in the world.",img:"The iconic clock tower of Big Ben against a blue London sky.",example:"She is famous for her cooking."},"bread":{gap:"She bought a fresh loaf of _____ from the bakery.",img:"A golden-brown loaf of bread on a wooden cutting board.",example:"I eat bread and butter for breakfast."},"egg":{gap:"He had two fried _____ on toast for breakfast.",img:"Two sunny-side-up fried eggs in a pan, yellow yolks still runny.",example:"She boiled an egg for exactly four minutes."},"apple":{gap:"She packed an _____ in her school bag for the break.",img:"A shiny red apple sitting on top of a packed school bag.",example:"An apple a day keeps the doctor away."},"chocolate":{gap:"He broke off a piece of dark _____ and ate it slowly.",img:"A bar of dark chocolate with several pieces broken off.",example:"She bought a chocolate bar for one pound."},"banana":{gap:"She slipped on a _____ skin — just like in a cartoon!",img:"A yellow banana skin on the pavement and a surprised child looking at it.",example:"I have a banana for breakfast every day."},"milk":{gap:"He poured _____ over his cereal.",img:"A stream of white milk being poured from a jug onto a bowl of cereal.",example:"The milk in the fridge is out of date."},"healthy":{gap:"Eating fruit and vegetables is very _____ for you.",img:"A colourful plate with fruit, salad and vegetables arranged neatly.",example:"She tries to eat healthy food every day."},"supermarket":{gap:"Mum does the weekly shopping at the big _____ on Friday.",img:"Long aisles of a brightly lit supermarket with trolleys and shoppers.",example:"The new supermarket opens tomorrow."},"salad":{gap:"She made a green _____ with tomatoes and cucumber.",img:"A fresh green salad in a bowl with red tomatoes and cucumber slices.",example:"He had a salad for lunch."},"tomato":{gap:"She put a slice of _____ on her sandwich.",img:"A ripe red tomato being sliced on a kitchen board.",example:"These tomatoes come from our garden."},"cake":{gap:"She baked a chocolate _____ for the birthday party.",img:"A round chocolate layer cake with candles on a cake stand.",example:"Can I have a piece of cake?"},"strawberry":{gap:"He ate a whole bowl of fresh _____.",img:"A bowl overflowing with bright red strawberries.",example:"Strawberry ice cream is my favourite."},"world":{gap:"English is spoken all around the _____.",img:"A globe showing all the continents, with speech bubbles above different countries.",example:"She wants to travel the whole world."},"technology":{gap:"Modern _____ makes it easy to talk to people on the other side of the world.",img:"A laptop showing a video call with two children waving at each other from different countries.",example:"Technology changes very fast."},"government":{gap:"The _____ decided to build a new school.",img:"A grand government building with a flag on top and people walking in.",example:"The government makes the laws."},"million":{gap:"London has more than eight _____ people.",img:"A vast crowd of people seen from above in a city.",example:"One million is a very big number."},"tradition":{gap:"Fireworks on New Year\'s Eve is a _____ in many countries.",img:"People watching fireworks from a rooftop, wrapped in coats and scarves.",example:"It is a tradition to eat pancakes on Pancake Day."},"wedding":{gap:"My aunt had a big _____ with two hundred guests.",img:"A bride and groom outside a church with guests throwing confetti.",example:"We are going to a wedding in July."},"event":{gap:"The school fair is a big _____ that happens every year.",img:"A bustling school fair with stalls, balloons and lots of families.",example:"The sports day is my favourite school event."},"colourful":{gap:"The carnival was loud and very _____.",img:"A carnival parade with dancers in bright costumes of every colour.",example:"She wore a colourful dress to the festival."},"bonfire":{gap:"We roasted marshmallows on the _____ at the Guy Fawkes party.",img:"A large fire blazing outdoors at night with a crowd standing around it.",example:"The bonfire was so big we could see it from the road."},"moon":{gap:"On a clear night, you can see the _____ from our garden.",img:"A full round moon shining in a dark blue sky with a few stars.",example:"The first man on the moon was Neil Armstrong."},"zoo":{gap:"We saw lions and giraffes at the _____ yesterday.",img:"A giraffe eating from a tree inside a zoo enclosure, visitors watching.",example:"The zoo near us has pandas."},"space":{gap:"Astronauts travel to _____ in rockets.",img:"A rocket launching into a star-filled black sky above the Earth.",example:"She wants to be a space explorer one day."},"president":{gap:"The _____ of the USA lives in the White House.",img:"The front of the White House with the American flag flying above it.",example:"The president gave a speech on TV."},"freedom":{gap:"The Statue of Liberty is a symbol of _____.",img:"The Statue of Liberty holding her torch against a bright blue sky.",example:"Everyone deserves freedom."},"stadium":{gap:"The football _____ holds eighty thousand fans.",img:"A massive football stadium seen from above, completely full of cheering fans.",example:"We watched the match from the stadium."},"skyscraper":{gap:"New York is famous for its tall _____.",img:"The Manhattan skyline with dozens of towering glass skyscrapers.",example:"The skyscraper has one hundred floors."},"cow":{gap:"The black and white _____ stood in the middle of the field.",img:"A black and white cow standing in a green meadow, chewing grass.",example:"Milk comes from cows."},"polar bear":{gap:"The _____ dived into the icy Arctic water.",img:"A large white polar bear jumping into freezing water in an icy landscape.",example:"Polar bears live in the Arctic."},"music":{gap:"She listens to _____ while she does her homework.",img:"A girl at a desk with headphones on, books open in front of her.",example:"What kind of music do you like?"},"book":{gap:"He read a whole _____ in one afternoon.",img:"A boy lying on his bed completely absorbed in a thick book.",example:"I got three new books for my birthday."},"bike":{gap:"She cycled to school on her red _____.",img:"A bright red bicycle leaning against a school fence.",example:"His bike has a flat tyre."},"game":{gap:"We played a board _____ after dinner.",img:"A family sitting around a table playing a board game with dice and coloured pieces.",example:"That computer game is too violent."},"to play":{gap:"They _____ football every day after school.",img:"A group of children playing football in a park after school.",example:"Do you want to play a board game?"},"to read":{gap:"She loves to _____ adventure stories.",img:"A girl reading a book with a torch under her duvet at night.",example:"He reads for twenty minutes every evening."}};
+
+// ── Section metadata ──
+const SECTIONS={
+  PUA:{label:"PUA",full:"Starter A"},
+  U1: {label:"Unit 1",full:"Unit 1 · Familie & Zuhause"},
+  PUB:{label:"PUB",full:"Starter B"},
+  U2: {label:"Unit 2",full:"Unit 2 · Schule"},
+  U3: {label:"Unit 3",full:"Unit 3 · Alltag"},
+  AC1:{label:"AC1",full:"Around Clock 1"},
+  F1: {label:"Focus 1",full:"Focus 1 · Großbritannien"},
+  U4: {label:"Unit 4",full:"Unit 4 · Freizeit"},
+  U5: {label:"Unit 5",full:"Unit 5 · Einkaufen"},
+  AC2:{label:"AC2",full:"Around Clock 2"},
+  F2: {label:"Focus 2",full:"Focus 2 · Englisch weltweit"},
+  U6: {label:"Unit 6",full:"Unit 6 · Feste & Feiern"},
+  AC3:{label:"AC3",full:"Around Clock 3"},
+  F3: {label:"Focus 3",full:"Focus 3 · USA"},
+};
+const CORE_SECS=["U1","U2","U3","U4","U5","U6","PUB"];
+const CORE_SKIP=new Set(["family tree","guinea pig","recording studio","tutor","lunch break","over there","spelling","planner","netball","stepmum","roommate","to snore","surgery","cooking","dialogue","tail","to bark","rhythm","scene","water slide","lifebuoy","lifeboat","captain","sailor","pier","survey","half-sister","to spell","penny","snack bar","bracelet","community centre","charity shop","to clear out","to make money","charity","answering machine","to put through","buyer","seller","raffle","rubbish","horrified","helpless","to pull","trifle","custard","jelly","locker","to whisper","bowling alley","sleepover","costume","barbecue","to make a wish","to decorate","to trip","yummy","to count","pancake","cookie","vacation","guy","to stay up","timetable","bus station","escalator","british","lucky charm","dvd","reading","text message","to take photos","to paint","to go swimming","recording"]);
+function isCoreWord(v){return CORE_SECS.includes(v.sec)&&!CORE_SKIP.has(v.en.toLowerCase());}
+
+// ── SM-2 Spaced Repetition ────────────────────────────────────────────────────
+// Card state: {interval, easiness, reps, due, total_reviews, correct_reviews}
+// interval: days until next review
+// easiness: difficulty factor 1.3–2.5
+// reps: consecutive correct answers
+// due: ISO date string YYYY-MM-DD
+
+const DEFAULT_CARD = {interval:1, easiness:2.5, reps:0, due:null, total:0, correct:0};
+
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function addDays(days){
+  const d=new Date(); d.setDate(d.getDate()+Math.round(days));
+  return d.toISOString().slice(0,10);
+}
+
+function loadSRS(){try{return JSON.parse(localStorage.getItem("vt_srs")||"{}")}catch{return {}}}
+function saveSRS(s){try{localStorage.setItem("vt_srs",JSON.stringify(s))}catch{}}
+function loadStreak(){try{return JSON.parse(localStorage.getItem("vt_streak")||'{"count":0,"last":""}')}catch{return{count:0,last:""}}}
+function saveStreak(s){try{localStorage.setItem("vt_streak",JSON.stringify(s))}catch{}}
+
+let srsData = loadSRS(); // {word: {interval, easiness, reps, due, total, correct}}
+let streakData = loadStreak();
+
+function getCard(word){
+  return srsData[word] ? {...DEFAULT_CARD,...srsData[word]} : {...DEFAULT_CARD};
+}
+
+// SM-2 update: quality 0-5 (we use 0=wrong, 5=correct)
+function updateSM2(word, correct){
+  const c = getCard(word);
+  const q = correct ? 5 : 0;
+  c.total++;
+  if(correct) c.correct++;
+
+  if(q < 3){
+    // wrong: reset
+    c.reps = 0;
+    c.interval = 1;
+  } else {
+    // correct
+    if(c.reps === 0) c.interval = 1;
+    else if(c.reps === 1) c.interval = 3;
+    else c.interval = Math.round(c.interval * c.easiness);
+    c.reps++;
+  }
+  // update easiness: EF' = EF + (0.1 - (5-q)*(0.08+(5-q)*0.02))
+  c.easiness = Math.max(1.3, c.easiness + 0.1 - (5-q)*(0.08+(5-q)*0.02));
+  c.due = addDays(c.interval);
+  srsData[word] = c;
+  saveSRS(srsData);
+}
+
+function isLearned(word){
+  const c=getCard(word);
+  return c.reps >= 2 && c.interval >= 3;
+}
+
+function isDueToday(word){
+  const c=getCard(word);
+  if(!c.due) return false;
+  return c.due <= todayStr();
+}
+
+function isNew(word){
+  return !srsData[word];
+}
+
+function getDueVocab(vocab){
+  return vocab.filter(v => isDueToday(v.en));
+}
+
+function getNewVocab(vocab, limit=20){
+  return vocab.filter(v => isNew(v.en)).slice(0, limit);
+}
+
+function getAccuracy(word){
+  const c=getCard(word);
+  if(!c.total) return null;
+  return Math.round(c.correct/c.total*100);
+}
+
+// Legacy: markLearned now calls SM-2
+function markLearned(word, correct=true){
+  updateSM2(word, correct);
+}
+
+// ── Export / Import ───────────────────────────────────────────────────────────
+function exportData(){
+  const data = {srs: srsData, streak: streakData, exported: new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vokabeltrainer-fortschritt.json';
+  a.click();
+  showToast("✅ Fortschritt exportiert!");
+}
+
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      if(data.srs){ srsData = data.srs; saveSRS(srsData); }
+      if(data.streak){ streakData = data.streak; saveStreak(streakData); }
+      showToast("✅ Fortschritt geladen!");
+      initUI();
+    } catch(err){ showToast("❌ Datei konnte nicht gelesen werden"); }
+  };
+  reader.readAsText(file);
+}
+
+// ── Streak ──
+function updateStreak(){
+  const today=new Date().toISOString().slice(0,10);
+  if(streakData.last===today) return;
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(streakData.last===yesterday){streakData.count++;}
+  else if(streakData.last!==today){streakData.count=1;}
+  streakData.last=today;
+  saveStreak(streakData);
+}
+function renderStreak(){
+  const el=document.getElementById("streak-badge");
+  const num=document.getElementById("streak-num");
+  num.textContent=streakData.count;
+  el.classList.toggle("active",streakData.count>0);
+}
+
+// ── XP & Achievements ─────────────────────────────────────────────────────────
+const XP_VALUES = {correct:10, correct_streak:5, first_time:20, creative_correct:15, due_correct:12};
+
+const ACHIEVEMENTS = [
+  {id:"first_word",   icon:"🌱", title:"Erster Schritt",     desc:"Erste Vokabel gelernt",            xp:50,  check:s=>s.totalCorrect>=1},
+  {id:"ten_words",    icon:"⭐", title:"Zehn Richtige",      desc:"10 Vokabeln richtig beantwortet",  xp:100, check:s=>s.totalCorrect>=10},
+  {id:"fifty_words",  icon:"🌟", title:"Fleißig!",           desc:"50 Vokabeln richtig beantwortet",  xp:250, check:s=>s.totalCorrect>=50},
+  {id:"streak3",      icon:"🔥", title:"3 Tage am Stück",    desc:"3 Tage Streak erreicht",           xp:150, check:s=>streakData.count>=3},
+  {id:"streak7",      icon:"💥", title:"Eine Woche!",        desc:"7 Tage Streak erreicht",           xp:500, check:s=>streakData.count>=7},
+  {id:"unit_done",    icon:"🏅", title:"Unit gemeistert",    desc:"Eine Unit zu 50% gelernt",         xp:200, check:s=>s.unitsDone>=1},
+  {id:"all_units",    icon:"🏆", title:"Alles dabei",        desc:"Alle 6 Hauptunits angefangen",     xp:300, check:s=>s.unitsStarted>=6},
+  {id:"creative10",   icon:"🎨", title:"Kreativkopf",        desc:"10x Kreativmodus gespielt",        xp:150, check:s=>s.creativeCount>=10},
+  {id:"due_session",  icon:"📅", title:"Drangeblieben",      desc:"Erste Wiederholungs-Session",      xp:100, check:s=>s.dueSessions>=1},
+  {id:"perfect_run",  icon:"💎", title:"Perfekte Runde",     desc:"10 Richtige am Stück ohne Fehler", xp:200, check:s=>s.bestStreak>=10},
+  {id:"hundred",      icon:"🎯", title:"Hundert!",           desc:"100 Vokabeln richtig beantwortet", xp:500, check:s=>s.totalCorrect>=100},
+];
+
+function loadXP(){try{return JSON.parse(localStorage.getItem("vt_xp")||'{"xp":0,"level":1,"totalCorrect":0,"creativeCount":0,"dueSessions":0,"bestStreak":0,"currentStreak":0,"unitsDone":0,"unitsStarted":0,"unlocked":[]}')}catch{return {xp:0,level:1,totalCorrect:0,creativeCount:0,dueSessions:0,bestStreak:0,currentStreak:0,unitsDone:0,unitsStarted:0,unlocked:[]}}}
+function saveXP(x){try{localStorage.setItem("vt_xp",JSON.stringify(x))}catch{}}
+
+let xpData = loadXP();
+
+function xpForLevel(lvl){ return lvl * 200; } // XP needed to reach next level
+function currentLevel(xp){
+  let lvl=1;
+  let needed=0;
+  while(needed+xpForLevel(lvl)<=xp){ needed+=xpForLevel(lvl); lvl++; }
+  return {level:lvl, current:xp-needed, needed:xpForLevel(lvl)};
+}
+
+function addXP(amount, reason=""){
+  xpData.xp += amount;
+  const before = xpData.level;
+  const info = currentLevel(xpData.xp);
+  xpData.level = info.level;
+  saveXP(xpData);
+  // Level up toast
+  if(info.level > before){
+    setTimeout(()=>showBigToast("🎉 Level "+info.level+"!", "Du hast Level "+info.level+" erreicht!"), 800);
+  }
+  renderXPBar();
+}
+
+function checkAchievements(){
+  const newlyUnlocked = [];
+  for(const ach of ACHIEVEMENTS){
+    if(!xpData.unlocked.includes(ach.id) && ach.check(xpData)){
+      xpData.unlocked.push(ach.id);
+      newlyUnlocked.push(ach);
+      addXP(ach.xp);
+    }
+  }
+  saveXP(xpData);
+  if(newlyUnlocked.length > 0){
+    setTimeout(()=>{
+      newlyUnlocked.forEach((a,i)=>{
+        setTimeout(()=>showBigToast(a.icon+" Achievement!", a.title+" — +"+a.xp+" XP"), i*1500);
+      });
+    }, 600);
+  }
+}
+
+function renderXPBar(){
+  const el = document.getElementById("xp-bar-fill");
+  const lvlEl = document.getElementById("xp-level");
+  const xpEl = document.getElementById("xp-label");
+  if(!el) return;
+  const info = currentLevel(xpData.xp);
+  const pct = Math.round(info.current/info.needed*100);
+  el.style.width = pct+"%";
+  if(lvlEl) lvlEl.textContent = "Level "+info.level;
+  if(xpEl) xpEl.textContent = info.current+" / "+info.needed+" XP";
+}
+
+function showBigToast(title, sub){
+  let el = document.getElementById("big-toast");
+  if(!el){
+    el = document.createElement("div");
+    el.id = "big-toast";
+    el.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:#1a2540;border:2px solid #F5E642;border-radius:20px;padding:24px 32px;text-align:center;z-index:200;transition:all .3s;opacity:0;pointer-events:none;max-width:280px;width:90%";
+    document.body.appendChild(el);
+  }
+  el.innerHTML=`<div style="font-size:36px;margin-bottom:8px">${title}</div><div style="font-weight:700;color:#F5E642;font-size:16px">${sub}</div>`;
+  el.style.opacity="1"; el.style.transform="translate(-50%,-50%) scale(1)";
+  setTimeout(()=>{el.style.opacity="0";el.style.transform="translate(-50%,-50%) scale(0.8)"},2200);
+}
+
+// ── State ──
+let currentCat="unit", selectedUnits=new Set(["U5"]);
+let currentMode=null,currentDir=null;
+let queue=[],repeatQueue=[],idx=0,scoreOk=0,scoreBad=0;
+let isRepeatRound=false, totalRounds=0;
+let feedbackGiven=false;
+let creativeType=null; // "sentence"|"gap"|"image"
+
+function applyFilters(vocab){
+  if(currentPos!=="all") vocab=vocab.filter(v=>v.pos===currentPos);
+  if(currentTopic!=="all") vocab=vocab.filter(v=>v.topic===currentTopic);
+  return vocab;
+}
+
+function getActiveVocab(){
+  let base;
+  if(currentCat==="all") base=ALL_VOCAB;
+  else if(currentCat==="core") base=ALL_VOCAB.filter(isCoreWord);
+  else base=ALL_VOCAB.filter(v=>selectedUnits.has(v.sec));
+  return applyFilters(base);
+}
+
+// ── Helpers ──
+function shuffle(arr){return[...arr].sort(()=>Math.random()-.5);}
+function norm(s){return s.trim().toLowerCase().replace(/[()]/g,"").replace(/\//g," ").replace(/\s+/g," ").trim();}
+// Synonym groups: any answer accepted for any word in the group
+const SYNONYMS=[
+  ["nobody","no one","niemand"],
+  ["somebody","someone","jemand"],
+  ["anybody","anyone","irgendjemand"],
+  ["nothing","nichts"],
+  ["anything","irgendetwas"],
+  ["mum","mom","die mama"],
+  ["dad","der papa"],
+  ["grandad","grandpa","der opa"],
+  ["grandma","grandmother","die oma"],
+];
+function getSynonyms(word){
+  const w=norm(word);
+  for(const grp of SYNONYMS){ if(grp.some(s=>norm(s)===w)) return grp; }
+  return null;
+}
+function isMatch(input,correct){
+  const n=norm(input);
+  // direct match including slash-variants
+  if(correct.split("/").map(p=>norm(p)).includes(n)||norm(correct)===n) return true;
+  // synonym group match
+  const grp=getSynonyms(correct);
+  if(grp && grp.some(s=>norm(s)===n)) return true;
+  return false;
+}
+function genOptions(card,pool,field){return shuffle([card[field],...shuffle(pool.filter(v=>v[field]!==card[field])).slice(0,3).map(v=>v[field])]);}
+function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");document.getElementById("home-btn").style.display=id==="filter-screen"?"none":"block";}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+
+// ── Init UI ──
+function initUI(){
+  const seccounts={};
+  ALL_VOCAB.forEach(v=>seccounts[v.sec]=(seccounts[v.sec]||0)+1);
+  document.getElementById("cnt-core").textContent=ALL_VOCAB.filter(isCoreWord).length;
+  document.getElementById("cnt-all").textContent=ALL_VOCAB.length;
+
+  const MAIN_UNITS=["U1","U2","U3","U4","U5","U6"];
+  const EXTRA_ORDER=["PUA","PUB","AC1","F1","AC2","F2","AC3","F3"];
+  const mainGrid=document.getElementById("unit-grid-main");
+  const extraGrid=document.getElementById("unit-grid-extra");
+  mainGrid.innerHTML=""; extraGrid.innerHTML="";
+
+  function makeUnitBtn(sec){
+    const learned=ALL_VOCAB.filter(v=>v.sec===sec&&isLearned(v.en)).length;
+    const total=seccounts[sec]||0;
+    const pct=total?Math.round(learned/total*100):0;
+    const btn=document.createElement("div");
+    btn.className="unit-btn"+(selectedUnits.has(sec)?" selected":"");
+    btn.dataset.sec=sec;
+    btn.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="ulabel">${SECTIONS[sec].full||SECTIONS[sec].label}</span><span class="ucnt">${total}</span></div><div class="uprog" style="width:${pct}%"></div>`;
+    btn.onclick=()=>toggleUnit(sec,btn);
+    return btn;
+  }
+
+  MAIN_UNITS.forEach(sec=>mainGrid.appendChild(makeUnitBtn(sec)));
+  EXTRA_ORDER.forEach(sec=>extraGrid.appendChild(makeUnitBtn(sec)));
+  updateUnitCount();
+  updatePosCounts();
+  updateActiveCount();
+  renderProgressPanel();
+  renderStreak();
+  renderDuePanel();
+  renderXPBar();
+}
+
+function updateUnitCount(){
+  document.getElementById("cnt-unit").textContent=ALL_VOCAB.filter(v=>selectedUnits.has(v.sec)).length;
+}
+
+function toggleUnit(sec,btn){
+  if(selectedUnits.has(sec)){if(selectedUnits.size>1){selectedUnits.delete(sec);btn.classList.remove("selected");}}
+  else{selectedUnits.add(sec);btn.classList.add("selected");}
+  updateUnitCount(); updateActiveCount();
+}
+
+let currentPos="all", currentTopic="all";
+
+function setCat(cat){
+  currentCat=cat;
+  document.querySelectorAll("[data-cat]").forEach(t=>t.classList.toggle("active",t.dataset.cat===cat));
+  document.getElementById("unit-picker").style.display=cat==="unit"?"block":"none";
+  document.getElementById("pos-section").style.display=cat!=="unit"?"block":"none";
+  document.getElementById("topic-section").style.display=cat!=="unit"?"block":"none";
+  updatePosCounts();
+  updateActiveCount();
+}
+
+function setPos(pos){
+  currentPos=pos;
+  document.querySelectorAll("[data-pos]").forEach(t=>t.classList.toggle("active",t.dataset.pos===pos));
+  updateUnitCount(); updateActiveCount();
+}
+
+function setTopic(topic){
+  currentTopic=topic;
+  document.querySelectorAll("[data-topic]").forEach(t=>t.classList.toggle("active",t.dataset.topic===topic));
+  updateUnitCount(); updateActiveCount();
+}
+
+function updateActiveCount(){
+  const n=getActiveVocab().length;
+  const el=document.getElementById("active-count");
+  if(el) el.textContent=n>0?n+" Vokabeln ausgewählt":"⚠️ Keine Vokabeln — bitte Filter anpassen";
+}
+
+function updatePosCounts(){
+  const base = currentCat==="core" ? ALL_VOCAB.filter(isCoreWord) : ALL_VOCAB;
+  ["V","N","ADJ","NUM","PRO"].forEach(p=>{
+    const el=document.getElementById("cnt-pos-"+p);
+    if(el) el.textContent=base.filter(v=>v.pos===p).length;
+  });
+}
+
+function renderDuePanel(){
+  const due = getDueVocab(ALL_VOCAB);
+  const neverSeen = ALL_VOCAB.filter(v=>isNew(v.en)).length;
+  const panel = document.getElementById("due-panel");
+  const desc = document.getElementById("due-desc");
+  const btn = document.getElementById("due-btn");
+  if(!panel) return;
+
+  if(due.length > 0){
+    panel.style.display="block";
+    desc.textContent = due.length+" Wörter warten auf Wiederholung";
+    btn.disabled=false;
+    btn.style.opacity="1";
+  } else if(Object.keys(srsData).length > 0){
+    panel.style.display="block";
+    const next = Object.values(srsData)
+      .filter(c=>c.due)
+      .map(c=>c.due)
+      .sort()[0];
+    desc.textContent = next ? "Alles erledigt! Nächste Karte am "+next : "Alle Karten auf dem neuesten Stand 🎉";
+    btn.disabled=true;
+    btn.style.opacity="0.4";
+  } else {
+    panel.style.display="none";
+  }
+}
+
+function showAchievements(){
+  // Update stats
+  const info = currentLevel(xpData.xp);
+  document.getElementById("ach-level").textContent = info.level;
+  document.getElementById("ach-xp").textContent = xpData.xp;
+  document.getElementById("ach-unlocked").textContent = xpData.unlocked.length+"/"+ACHIEVEMENTS.length;
+
+  // Render achievement list
+  const list = document.getElementById("ach-list");
+  list.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = xpData.unlocked.includes(a.id);
+    return `<div style="background:#1a2540;border:1px solid ${unlocked?"#F5E64266":"#2a3a6a"};border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;opacity:${unlocked?1:0.45}">
+      <div style="font-size:28px;flex-shrink:0">${a.icon}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px;color:${unlocked?"#F5E642":"#eef2ff"}">${a.title}</div>
+        <div style="font-size:12px;color:#8899bb;margin-top:2px">${a.desc}</div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:${unlocked?"#4ECDC4":"#8899bb"};flex-shrink:0">${unlocked?"✓":""}+${a.xp} XP</div>
+    </div>`;
+  }).join("");
+
+  showScreen("ach-screen");
+}
+
+function renderProgressPanel(){
+  const panel=document.getElementById("progress-panel");
+  const rows=document.getElementById("prog-rows");
+  const mainSecs=["U1","U2","U3","U4","U5","U6"];
+  const seccounts={};ALL_VOCAB.forEach(v=>seccounts[v.sec]=(seccounts[v.sec]||0)+1);
+  const hasAny=mainSecs.some(s=>ALL_VOCAB.some(v=>v.sec===s&&srsData[v.en]));
+  panel.style.display=hasAny?"block":"none";
+  rows.innerHTML=mainSecs.map(sec=>{
+    const total=seccounts[sec]||0;
+    const learned=ALL_VOCAB.filter(v=>v.sec===sec&&isLearned(v.en)).length;
+    const pct=total?Math.round(learned/total*100):0;
+    return `<div class="prog-row"><span class="prog-label">${SECTIONS[sec].label}</span><div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div><span class="prog-pct">${pct}%</span></div>`;
+  }).join("");
+}
+
+function goToMode(){
+  const vocab=getActiveVocab();
+  if(vocab.length<4){alert("Bitte mindestens 4 Vokabeln auswählen.");return;}
+  const labels=currentCat==="unit"?[...selectedUnits].map(s=>SECTIONS[s].label).join(", "):currentCat==="core"?"Wichtigste":"Alle";
+  document.getElementById("set-info").textContent=vocab.length+" Vokabeln · "+labels;
+  showScreen("mode-screen");
+}
+
+// ── Quiz ──
+function startDueSession(){
+  const due = getDueVocab(ALL_VOCAB);
+  if(due.length === 0){ showToast("Nichts fällig heute 🎉"); return; }
+  xpData.dueSessions=(xpData.dueSessions||0)+1;
+  saveXP(xpData);
+  currentMode="type"; currentDir="en2de";
+  queue=shuffle(due);
+  repeatQueue=[];idx=0;scoreOk=0;scoreBad=0;
+  isRepeatRound=false;totalRounds=1;
+  feedbackGiven=false;
+  updateStreak();renderStreak();
+  showScreen("quiz-screen");
+  renderCard();
+}
+
+function startQuiz(mode,dir){
+  currentMode=mode;currentDir=dir;
+  queue=shuffle(getActiveVocab());
+  repeatQueue=[];idx=0;scoreOk=0;scoreBad=0;
+  isRepeatRound=false;totalRounds=1;
+  feedbackGiven=false;
+  updateStreak();renderStreak();
+  showScreen("quiz-screen");
+  renderCard();
+}
+function restartQuiz(){startQuiz(currentMode,currentDir);}
+
+function renderCard(){
+  feedbackGiven=false;
+  const card=queue[idx];
+  const qField=currentDir==="en2de"?"en":"de";
+  const aField=currentDir==="en2de"?"de":"en";
+
+  document.getElementById("quiz-counter").textContent=(idx+1)+" / "+queue.length;
+  document.getElementById("score-ok").textContent="✓"+scoreOk;
+  document.getElementById("score-bad").textContent="✗"+scoreBad;
+  document.getElementById("progress-fill").style.width=((idx/queue.length)*100)+"%";
+  document.getElementById("round-badge").className="round-badge"+(isRepeatRound?" show":"");
+
+  const pill=document.getElementById("mode-pill");
+  pill.className="mode-pill "+(currentMode==="creative"?"creative":"standard");
+  pill.textContent=currentMode==="creative"?"🎨 Kreativ":currentMode==="mc"?"Multiple Choice":"Eingeben";
+
+  const cardEl=document.getElementById("card");
+  cardEl.className="card"+(currentMode==="creative"?" creative-card":"");
+  document.getElementById("card-label").textContent=currentDir==="en2de"?"🇬🇧 Englisch":"🇩🇪 Deutsch";
+  const posLabels={V:"🔵 Verb",N:"🟡 Nomen",ADJ:"🟢 Adj",NUM:"🔢 Zahl",PRO:"🔤 Pronomen",PREP:"PREP",PHR:"PHR"};
+  const topicLabels={family:"👨‍👩‍👧",home:"🏠",school:"🏫",leisure:"🎨",shopping:"🛒",food:"🍎",feelings:"💬",time:"⏰",places:"🗺️",nature:"🌿",celebrations:"🎉",world:"🌍",language:"💡"};
+  const c=getCard(card.en);
+  const srsInfo = c.reps>0 ? (" · "+Math.round(c.correct/(c.total||1)*100)+"% ✓") : " · neu";
+  document.getElementById("card-sec").textContent=(SECTIONS[card.sec]?.label||card.sec)+" · "+(posLabels[card.pos]||card.pos)+" "+(topicLabels[card.topic]||"")+srsInfo;
+  document.getElementById("card-word").textContent=card[qField];
+  document.getElementById("card-feedback").textContent="";
+  document.getElementById("card-feedback").className="card-feedback";
+  document.getElementById("ai-response").className="ai-response";
+  document.getElementById("ai-response").textContent="";
+  document.getElementById("ai-loading").className="ai-loading";
+  document.getElementById("creative-prompt").style.display="none";
+  document.getElementById("creative-image").style.display="none";
+  document.getElementById("creative-type-badge").style.display="none";
+
+  if(currentMode==="creative"){
+    renderCreativeCard(card,qField,aField);
+  } else if(currentMode==="type"){
+    renderTypeInput(aField);
+  } else {
+    renderMCInput(card,aField);
+  }
+}
+
+// ── Standard modes ──
+function renderTypeInput(aField){
+  const area=document.getElementById("input-area");
+  area.innerHTML=`<div class="type-area"><input id="type-input" class="type-input" placeholder="${aField==="de"?"Deutsch eingeben…":"English eingeben…"}" autocomplete="off" autocorrect="off" spellcheck="false"><button class="btn-y" id="check-btn" onclick="checkType()">Prüfen</button></div>`;
+  const inp=document.getElementById("type-input");
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter"){if(!feedbackGiven)checkType();else nextCard();}});
+  setTimeout(()=>inp.focus(),80);
+}
+
+function renderMCInput(card,aField){
+  const opts=genOptions(card,queue,aField);
+  document.getElementById("input-area").innerHTML=`<div class="mc-grid" id="mc-grid">`+
+    opts.map(opt=>`<button class="mc-btn" onclick="checkMC(this,'${opt.replace(/'/g,"\\'")}','${aField}')">${opt}</button>`).join("")+`</div>`;
+}
+
+function checkType(){
+  if(feedbackGiven)return;
+  const inp=document.getElementById("type-input");
+  const aField=currentDir==="en2de"?"de":"en";
+  const ok=isMatch(inp.value,queue[idx][aField]);
+  inp.classList.add(ok?"correct":"wrong");inp.disabled=true;
+  showFeedback(ok,queue[idx][aField]);
+  if(ok){
+    const btn=document.getElementById("check-btn");btn.textContent="Weiter →";btn.onclick=nextCard;
+  } else {
+    // Show retry input
+    const area=document.getElementById("input-area");
+    const retryDiv=document.createElement("div");
+    retryDiv.className="type-area";
+    retryDiv.style.marginTop="8px";
+    const correctWord=queue[idx][aField];
+    retryDiv.innerHTML=`<div style="font-size:12px;color:#FF6B6B;text-align:center;margin-bottom:4px">✍️ Schreib das richtige Wort ab, um es einzuprägen:</div>
+      <input id="retry-input" class="type-input" placeholder="${correctWord}" autocomplete="off" autocorrect="off" spellcheck="false" style="border-color:#a78bfa44">
+      <button class="btn-ghost" id="retry-btn" onclick="checkRetry('${correctWord.replace(/'/g,"\'")}')">Bestätigen →</button>`;
+    area.appendChild(retryDiv);
+    setTimeout(()=>document.getElementById("retry-input")?.focus(),80);
+  }
+}
+
+function checkRetry(correctWord){
+  const inp=document.getElementById("retry-input");
+  if(!inp)return;
+  const typed=inp.value.trim();
+  if(norm(typed)!==norm(correctWord)){
+    inp.style.borderColor="#FF6B6B";
+    inp.value="";
+    inp.placeholder="Nochmal: "+correctWord;
+    inp.focus();
+    return;
+  }
+  inp.classList.add("correct");inp.disabled=true;
+  document.getElementById("retry-btn").textContent="Weiter →";
+  document.getElementById("retry-btn").onclick=nextCard;
+  document.getElementById("retry-btn").className="btn-y";
+}
+
+function checkMC(btn,opt,aField){
+  if(feedbackGiven)return;
+  const ok=isMatch(opt,queue[idx][aField]);
+  showFeedback(ok,queue[idx][aField]);
+  document.querySelectorAll(".mc-btn").forEach(b=>{b.disabled=true;if(isMatch(b.textContent,queue[idx][aField]))b.classList.add("revealed-correct");});
+  const next=document.createElement("button");next.className="btn-y mc-next";next.textContent="Weiter →";next.onclick=nextCard;
+  document.getElementById("mc-grid").appendChild(next);
+}
+
+function showFeedback(correct,correctAnswer){
+  feedbackGiven=true;
+  document.getElementById("card").classList.add(correct?"correct":"wrong");
+  const fb=document.getElementById("card-feedback");
+  fb.className="card-feedback "+(correct?"correct":"wrong");
+  fb.textContent=correct?"✓ Richtig!":"✗ Lösung: "+correctAnswer;
+  if(correct){
+    scoreOk++;
+    updateSM2(queue[idx].en, true);
+    const c=getCard(queue[idx].en);
+    // XP
+    let xpGained = XP_VALUES.correct;
+    const isFirstTime = xpData.totalCorrect === 0 || !srsData[queue[idx].en] || srsData[queue[idx].en].reps===1;
+    if(isFirstTime) xpGained += XP_VALUES.first_time;
+    if(currentMode==="creative") xpGained += XP_VALUES.creative_correct - XP_VALUES.correct;
+    if(isDueToday(queue[idx].en)) xpGained += XP_VALUES.due_correct - XP_VALUES.correct;
+    // consecutive bonus
+    xpData.currentStreak = (xpData.currentStreak||0)+1;
+    if(xpData.currentStreak>1) xpGained += XP_VALUES.correct_streak;
+    if(xpData.currentStreak > (xpData.bestStreak||0)) xpData.bestStreak=xpData.currentStreak;
+    xpData.totalCorrect = (xpData.totalCorrect||0)+1;
+    if(currentMode==="creative") xpData.creativeCount=(xpData.creativeCount||0)+1;
+    saveXP(xpData);
+    addXP(xpGained);
+    showToast("+"+xpGained+" XP ✓");
+    if(c.reps===2) setTimeout(()=>showToast("⭐ "+queue[idx].en+" — nächste Wiederholung in "+c.interval+" Tagen!"),1200);
+    checkAchievements();
+  } else {
+    scoreBad++;
+    xpData.currentStreak=0;
+    saveXP(xpData);
+    updateSM2(queue[idx].en, false);
+    if(!isRepeatRound) repeatQueue.push(queue[idx]);
+  }
+  document.getElementById("score-ok").textContent="✓"+scoreOk;
+  document.getElementById("score-bad").textContent="✗"+scoreBad;
+}
+
+// ── Creative mode ──
+const CREATIVE_TYPES=["sentence","gap","image"];
+function renderCreativeCard(card,qField,aField){
+  creativeType=CREATIVE_TYPES[Math.floor(Math.random()*CREATIVE_TYPES.length)];
+  const badge=document.getElementById("creative-type-badge");
+  badge.style.display="block";
+  const typeLabels={sentence:"✍️ Satz bauen",gap:"🧩 Lückentext",image:"🖼️ Bildmodus"};
+  badge.textContent=typeLabels[creativeType];
+
+  if(creativeType==="sentence"){
+    renderSentenceTask(card,qField,aField);
+  } else if(creativeType==="gap"){
+    renderGapTask(card,qField,aField);
+  } else {
+    renderImageTask(card,qField,aField);
+  }
+}
+
+async function callClaude(prompt){
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+  });
+  const data=await resp.json();
+  return data.content?.[0]?.text||"(Fehler)";
+}
+
+function renderSentenceTask(card,qField,aField){
+  const word=card.en;
+  const de=card.de;
+  const db=CREATIVE_DB[word];
+  const prompt_el=document.getElementById("creative-prompt");
+  prompt_el.style.display="block";
+  prompt_el.innerHTML=`Schreibe einen englischen Satz mit dem Wort <strong style="color:#F5E642">"${word}"</strong>.<br><span style="font-size:12px;color:#8899bb">Bedeutung: ${de}</span>`;
+  const area=document.getElementById("input-area");
+  area.innerHTML=`<div class="type-area">
+    <textarea id="creative-input" class="creative-input" rows="3" placeholder='Dein Satz mit "${word}"…'></textarea>
+    <button class="btn-p" id="check-btn" onclick="checkSentence('${word.replace(/'/g,"\'")}')">✓ Prüfen</button>
+  </div>`;
+  setTimeout(()=>document.getElementById("creative-input")?.focus(),80);
+}
+
+
+async function checkSentence(word){
+  const inp=document.getElementById("creative-input");
+  const sentence=inp?.value?.trim();
+  if(!sentence){alert("Bitte einen Satz eingeben!");return;}
+  inp.disabled=true;
+  document.getElementById("check-btn").disabled=true;
+  document.getElementById("ai-loading").className="ai-loading show";
+  const prompt=`A student learning English wrote this sentence using the word "${word}": "${sentence}"\n\nEvaluate in exactly this format:\n✓ or ✗ on the first line\nThen 1-2 short sentences of feedback in simple German (A1-A2 level).\nIf wrong, give the corrected sentence.\nKeep it encouraging and brief.`;
+  try{
+    const result=await callClaude(prompt);
+    document.getElementById("ai-loading").className="ai-loading";
+    const resp=document.getElementById("ai-response");
+    resp.className="ai-response show";resp.textContent=result;
+    const ok=result.trim().startsWith("✓");
+    showFeedback(ok,word+" korrekt verwendet");
+    addNextBtn();
+  }catch(e){
+    document.getElementById("ai-loading").className="ai-loading";
+    const dbEntry=CREATIVE_DB[word];
+    const exText = dbEntry&&dbEntry.example ? "📖 Beispielsatz: "+dbEntry.example : "KI nicht erreichbar. Weiter so!";
+    document.getElementById("ai-loading").className="ai-loading";
+    document.getElementById("ai-response").className="ai-response show";
+    document.getElementById("ai-response").textContent=exText;
+    showFeedback(true,"—");addNextBtn();
+  }
+}
+
+function renderGapTask(card,qField,aField){
+  const word=card.en;
+  const de=card.de;
+  const db=CREATIVE_DB[word];
+  document.getElementById("creative-prompt").style.display="block";
+  document.getElementById("ai-loading").className="ai-loading";
+  if(db && db.gap){
+    document.getElementById("creative-prompt").innerHTML=
+      `Ergänze die Lücke:<br><strong style="color:#eef2ff;font-size:17px">${db.gap}</strong><br><span style="font-size:11px;color:#8899bb">Tipp: Auf Deutsch: <em>${de}</em></span>`;
+    document.getElementById("input-area").innerHTML=`<div class="type-area">
+      <input id="type-input" class="type-input" placeholder="Englisches Wort eingeben…" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="btn-p" id="check-btn" onclick="checkGap('${word.replace(/'/g,"\'")}')">Prüfen</button>
+    </div>`;
+    const inp=document.getElementById("type-input");
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&!feedbackGiven)checkGap(word);});
+    setTimeout(()=>inp.focus(),80);
+  } else {
+    document.getElementById("creative-prompt").innerHTML=
+      `<span style="color:#8899bb;font-size:12px">Standard-Modus</span><br>Wie lautet das <strong style="color:#F5E642">englische</strong> Wort für <strong style="color:#F5E642">"${de}"</strong>?`;
+    renderTypeInput("en");
+  }
+}
+
+
+function checkGap(word){
+  if(feedbackGiven)return;
+  const inp=document.getElementById("type-input");
+  const ok=isMatch(inp.value,word);
+  inp.classList.add(ok?"correct":"wrong");inp.disabled=true;
+  showFeedback(ok,word);
+  const btn=document.getElementById("check-btn");btn.textContent="Weiter →";btn.onclick=nextCard;
+}
+
+function renderImageTask(card,qField,aField){
+  const word=card.en;
+  const de=card.de;
+  const db=CREATIVE_DB[word];
+  document.getElementById("creative-prompt").style.display="block";
+  document.getElementById("ai-loading").className="ai-loading";
+  if(db && db.img){
+    document.getElementById("creative-prompt").innerHTML=
+      `🖼️ Was siehst du hier? Welches englische Wort passt?<br><span style="font-size:14px;color:#eef2ff;line-height:1.6;display:block;margin-top:6px">${db.img}</span>`;
+    const opts=genOptions(card,queue,"en");
+    document.getElementById("input-area").innerHTML=`<div class="mc-grid" id="mc-grid">`+
+      opts.map(opt=>`<button class="mc-btn" onclick="checkMC(this,'${opt.replace(/'/g,"\'")}','en')">${opt}</button>`).join("")+`</div>`;
+  } else {
+    document.getElementById("creative-prompt").style.display="none";
+    renderMCInput(card,aField);
+  }
+}
+
+
+function addNextBtn(){
+  const area=document.getElementById("input-area");
+  const btn=document.createElement("button");
+  btn.className="btn-p";btn.style.marginTop="8px";btn.style.width="100%";
+  btn.textContent="Weiter →";btn.onclick=nextCard;
+  area.appendChild(btn);
+}
+
+// ── Next / rounds ──
+function nextCard(){
+  if(idx+1>=queue.length){
+    if(!isRepeatRound&&repeatQueue.length>0){
+      // Start repeat round
+      queue=shuffle(repeatQueue);
+      repeatQueue=[];idx=0;
+      isRepeatRound=true;totalRounds++;
+      renderCard();
+    } else {
+      showResult();
+    }
+    return;
+  }
+  idx++;renderCard();
+}
+
+function showResult(){
+  // update unit achievement stats
+  const MAIN_UNITS=["U1","U2","U3","U4","U5","U6"];
+  const seccounts={};ALL_VOCAB.forEach(v=>seccounts[v.sec]=(seccounts[v.sec]||0)+1);
+  xpData.unitsStarted=MAIN_UNITS.filter(sec=>{
+    return ALL_VOCAB.some(v=>v.sec===sec&&srsData[v.en]);
+  }).length;
+  xpData.unitsDone=MAIN_UNITS.filter(sec=>{
+    const total=seccounts[sec]||0;
+    const learned=ALL_VOCAB.filter(v=>v.sec===sec&&isLearned(v.en)).length;
+    return total>0&&learned/total>=0.5;
+  }).length;
+  saveXP(xpData);
+  checkAchievements();
+  const total=queue.length+(isRepeatRound?0:repeatQueue.length);
+  const pct=Math.round((scoreOk/(scoreOk+scoreBad))*100)||0;
+  document.getElementById("result-emoji").textContent=pct===100?"🏆":pct>=80?"🌟":pct>=60?"👍":"📚";
+  document.getElementById("result-pct").textContent=pct+"%";
+  document.getElementById("result-sub").textContent=scoreOk+" von "+(scoreOk+scoreBad)+" richtig";
+  document.getElementById("result-rounds").textContent=totalRounds>1?`🔁 ${totalRounds} Runden — alle Fehler wiederholt`:"";
+  initUI(); // refresh progress
+  showScreen("result-screen");
+}
+
+// ── Boot ──
+initUI();
+</script>
+</body>
+</html>
